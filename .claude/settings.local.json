@@ -8,7 +8,15 @@
       "Bash(PNPM=/c/Users/Pau/AppData/Local/pnpm/.tools/@pnpm+win-x64/10.15.1_tmp_3604/bin/pnpm)",
       "Bash(\"$PNPM\" add -D @types/express --filter @inkbox/api --dir /c/Users/Pau/dev/inkbox)",
       "Bash(xargs grep -l \"\")",
-      "Bash(ls C:/Users/Pau/dev/inkbox/apps/api/.env*)"
+      "Bash(ls C:/Users/Pau/dev/inkbox/apps/api/.env*)",
+      "Bash(pnpm add --filter @inkbox/web tailwindcss @tailwindcss/postcss postcss)",
+      "Bash(npm run --version)",
+      "Read(//c/Users/Pau/AppData/Roaming/npm/**)",
+      "Bash(cmd.exe /c \"where pnpm\")",
+      "Read(//c/Users/Pau/AppData/Local/pnpm//**)",
+      "Read(//c/Users/Pau/**)",
+      "Bash(\"/c/Users/Pau/AppData/Local/pnpm/.tools/@pnpm+win-x64/10.15.1_tmp_3604/bin/pnpm\" --version)",
+      "Bash(\"$PNPM\" add --filter @inkbox/web tailwindcss @tailwindcss/postcss postcss)"
     ]
   }
 }
