@@ -10,9 +10,14 @@ export class AuthMiddleware implements NestMiddleware, OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
-    const { betterAuth } = await import('better-auth');
-    const { toNodeHandler } = await import('better-auth/node');
-    const { prismaAdapter } = await import('better-auth/adapters/prisma');
+    // TypeScript with module:CommonJS transforms `await import()` into `require()`,
+    // which breaks ESM-only packages like better-auth. Using `new Function` bypasses
+    // that transformation while preserving type safety via type-only imports.
+    const esmImport = new Function('m', 'return import(m)') as <T>(m: string) => Promise<T>;
+
+    const { betterAuth } = await esmImport<typeof import('better-auth')>('better-auth');
+    const { toNodeHandler } = await esmImport<typeof import('better-auth/node')>('better-auth/node');
+    const { prismaAdapter } = await esmImport<typeof import('better-auth/adapters/prisma')>('better-auth/adapters/prisma');
 
     const auth = betterAuth({
       database: prismaAdapter(this.prisma, { provider: 'postgresql' }),
