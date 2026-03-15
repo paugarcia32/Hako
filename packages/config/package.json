@@ -1,0 +1,9 @@
+{
+  "name": "@inkbox/config",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    "./tsconfig": "./tsconfig.json",
+    "./biome": "./biome.json"
+  }
+}

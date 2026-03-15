@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       Item[]
+  collections Collection[]
+  sessions    Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Item {
+  id          String      @id @default(cuid())
+  userId      String
+  url         String
+  type        ContentType @default(link)
+  status      ItemStatus  @default(pending)
+
+  title       String?
+  description String?
+  imageUrl    String?
+  content     String?     @db.Text
+  transcript  String?     @db.Text
+  author      String?
+  siteName    String?
+
+  isRead      Boolean     @default(false)
+  isFavorite  Boolean     @default(false)
+  readAt      DateTime?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collections CollectionItem[]
+  tags        ItemTag[]
+
+  @@index([userId])
+  @@index([userId, status])
+  @@map("items")
+}
+
+model Tag {
+  id     String    @id @default(cuid())
+  name   String
+  userId String
+
+  items  ItemTag[]
+
+  @@unique([name, userId])
+  @@map("tags")
+}
+
+model ItemTag {
+  itemId String
+  tagId  String
+
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, tagId])
+  @@map("item_tags")
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  shareToken  String?  @unique @default(cuid())
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       CollectionItem[]
+
+  @@index([userId])
+  @@index([shareToken])
+  @@map("collections")
+}
+
+model CollectionItem {
+  collectionId String
+  itemId       String
+  addedAt      DateTime @default(now())
+
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  item         Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, itemId])
+  @@map("collection_items")
+}
+
+enum ContentType {
+  article
+  youtube
+  tweet
+  link
+}
+
+enum ItemStatus {
+  pending
+  processing
+  done
+  failed
+}
