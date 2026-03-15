@@ -12,9 +12,24 @@ export const metadata: Metadata = {
   description: 'Your personal reading inbox',
 };
 
+// Blocking inline script — must run before first paint to avoid theme flash.
+// dangerouslySetInnerHTML is intentional here: content is a static string,
+// not user input, so there is no XSS risk.
+const ThemeScript = () => (
+  <script
+  // biome-ignore lint/security/noDangerouslySetInnerHtml: static theme init script
+    dangerouslySetInnerHTML={{
+      __html: `(function(){try{var s=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(s==='dark'||(!s&&d)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
+    }}
+  />
+);
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={plusJakarta.variable}>
+    <html lang="en" className={plusJakarta.variable} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body suppressHydrationWarning>{children}</body>
     </html>
   );
