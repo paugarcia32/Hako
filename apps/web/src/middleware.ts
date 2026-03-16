@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 const SESSION_COOKIE = 'better-auth.session_token';
 
-const PROTECTED_PATHS = ['/inbox', '/collections', '/settings'];
+const PROTECTED_PATHS = ['/inbox', '/all', '/collections', '/archive', '/settings'];
 const AUTH_PATHS = ['/login', '/register'];
 
 export function middleware(request: NextRequest) {
