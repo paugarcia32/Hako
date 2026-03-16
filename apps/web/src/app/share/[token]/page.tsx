@@ -1,3 +1,4 @@
-export default function SharePage({ params }: { params: { token: string } }) {
-  return <h1>Shared collection {params.token}</h1>;
+export default async function SharePage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  return <h1>Shared collection {token}</h1>;
 }

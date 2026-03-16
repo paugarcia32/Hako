@@ -4,6 +4,7 @@ import { trpc } from '@/lib/trpc';
 import { CheckIcon, StarIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import type { ContentType, Item } from '@inkbox/types';
+import Image from 'next/image';
 
 const TYPE_LABELS: Record<ContentType, string> = {
   article: 'Article',
@@ -37,7 +38,9 @@ export function ItemCard({ item }: { item: Item }) {
 
   return (
     <article className="flex items-start gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-700 dark:bg-stone-900">
-      {favicon && <img src={favicon} alt="" className="mt-0.5 size-5 shrink-0 rounded" />}
+      {favicon && (
+        <Image src={favicon} alt="" width={20} height={20} className="mt-0.5 shrink-0 rounded" />
+      )}
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">

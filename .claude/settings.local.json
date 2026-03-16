@@ -36,7 +36,8 @@
       "Bash(pnpm biome check)",
       "Bash(pnpm biome check --write apps/web/src/app/\\\\\\(app\\\\\\)/inbox/page.tsx package.json)",
       "WebFetch(domain:biomejs.dev)",
-      "WebFetch(domain:zed.dev)"
+      "WebFetch(domain:zed.dev)",
+      "Bash(cat \"C:/Users/Pau/dev/inkbox/apps/web/src/app/\\(app\\)/settings/page.tsx\")"
     ]
   }
 }
