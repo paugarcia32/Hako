@@ -1,9 +1,9 @@
 import { Injectable, type NestMiddleware } from '@nestjs/common';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import type { NextFunction, Request, Response } from 'express';
-import type { CollectionsRouter } from '../modules/collections/collections.router';
-import type { ItemsRouter } from '../modules/items/items.router';
-import type { TrpcService } from './trpc.service';
+import { CollectionsRouter } from '../modules/collections/collections.router';
+import { ItemsRouter } from '../modules/items/items.router';
+import { TrpcService } from './trpc.service';
 
 function createAppRouter(trpc: TrpcService, items: ItemsRouter, collections: CollectionsRouter) {
   return trpc.mergeRouters(

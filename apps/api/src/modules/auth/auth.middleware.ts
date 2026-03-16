@@ -1,6 +1,5 @@
 import { Injectable, type NestMiddleware } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
-// biome-ignore lint/style/useImportType: needed for emitDecoratorMetadata
 import { AuthService } from './auth.service';
 
 @Injectable()

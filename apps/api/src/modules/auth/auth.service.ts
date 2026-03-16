@@ -1,6 +1,5 @@
 import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import type { Request } from 'express';
-// biome-ignore lint/style/useImportType: needed for emitDecoratorMetadata
 import { PrismaService } from '../../prisma/prisma.service';
 
 type NodeHandler = (
