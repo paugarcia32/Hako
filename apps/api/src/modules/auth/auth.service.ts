@@ -1,4 +1,4 @@
-import { Injectable, type OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import type { Request } from 'express';
 // biome-ignore lint/style/useImportType: needed for emitDecoratorMetadata
 import { PrismaService } from '../../prisma/prisma.service';
@@ -7,6 +7,8 @@ type NodeHandler = (req: import('node:http').IncomingMessage, res: import('node:
 
 @Injectable()
 export class AuthService implements OnModuleInit {
+  private readonly logger = new Logger(AuthService.name);
+
   // biome-ignore lint/suspicious/noExplicitAny: better-auth is ESM-only; the concrete generic type can't be expressed in CJS TypeScript
   private _auth!: any;
   private _handler!: NodeHandler;
@@ -39,7 +41,7 @@ export class AuthService implements OnModuleInit {
       secret: process.env['BETTER_AUTH_SECRET'],
       baseURL: process.env['BETTER_AUTH_URL'],
       advanced: {
-        useSecureCookies: false,
+        useSecureCookies: process.env['NODE_ENV'] === 'production',
       },
     });
 
@@ -61,7 +63,8 @@ export class AuthService implements OnModuleInit {
         headers: this._fromNodeHeaders(req.headers),
       });
       return session ? { userId: session.user.id } : null;
-    } catch {
+    } catch (err) {
+      this.logger.error('getSession failed', err);
       return null;
     }
   }

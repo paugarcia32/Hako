@@ -15,11 +15,17 @@ export class ItemsService {
     });
   }
 
-  async findAll(userId: string) {
-    return this.prisma.item.findMany({
+  async findAll(userId: string, { limit, cursor }: { limit: number; cursor?: string | undefined }) {
+    const items = await this.prisma.item.findMany({
       where: { userId },
+      take: limit + 1,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { createdAt: 'desc' },
     });
+
+    const hasMore = items.length > limit;
+    if (hasMore) items.pop();
+    return { items, nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null };
   }
 
   async findOne(userId: string, id: string) {

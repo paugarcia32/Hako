@@ -7,22 +7,24 @@ import { CollectionsRouter } from '../modules/collections/collections.router';
 
 @Injectable()
 export class TrpcMiddleware implements NestMiddleware {
+  private readonly appRouter: ReturnType<TrpcService['mergeRouters']>;
+
   constructor(
     private readonly trpc: TrpcService,
     private readonly items: ItemsRouter,
     private readonly collections: CollectionsRouter,
-  ) {}
-
-  use(req: Request, res: Response, next: NextFunction) {
-    const appRouter = this.trpc.mergeRouters(
+  ) {
+    this.appRouter = this.trpc.mergeRouters(
       this.trpc.router({ items: this.items.router }),
       this.trpc.router({ collections: this.collections.router }),
     );
+  }
 
+  use(req: Request, res: Response, next: NextFunction) {
     fetchRequestHandler({
       endpoint: '/trpc',
       req: req as unknown as globalThis.Request,
-      router: appRouter,
+      router: this.appRouter,
       createContext: () => ({
         userId: (req as Request & { userId?: string | undefined }).userId ?? '',
         req,

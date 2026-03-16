@@ -12,9 +12,9 @@ export class ItemsRouter {
 
   get router() {
     return this.trpc.router({
-      list: this.trpc.protectedProcedure.query(({ ctx }) =>
-        this.items.findAll(ctx.userId),
-      ),
+      list: this.trpc.protectedProcedure
+        .input(z.object({ limit: z.number().min(1).max(100).default(50), cursor: z.string().optional() }))
+        .query(({ ctx, input }) => this.items.findAll(ctx.userId, input)),
 
       create: this.trpc.protectedProcedure
         .input(z.object({ url: z.string().url() }))

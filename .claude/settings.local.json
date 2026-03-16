@@ -26,7 +26,9 @@
       "Bash(npx prisma generate)",
       "Bash(ls -la \"/c/Users/Pau/dev/inkbox/node_modules/.pnpm/better-auth@1.5.5\"*)",
       "Bash(ls -la \"/c/Users/Pau/dev/inkbox/node_modules/.pnpm/\"*\"better-auth@1.5.5\"*)",
-      "Bash(xargs grep -l \"getCookie\")"
+      "Bash(xargs grep -l \"getCookie\")",
+      "Bash(pnpm add @nestjs/throttler)",
+      "Bash(pnpm typecheck)"
     ]
   }
 }

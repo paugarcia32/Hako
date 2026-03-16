@@ -5,11 +5,17 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class CollectionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(userId: string) {
-    return this.prisma.collection.findMany({
+  async findAll(userId: string, { limit, cursor }: { limit: number; cursor?: string | undefined }) {
+    const collections = await this.prisma.collection.findMany({
       where: { userId },
+      take: limit + 1,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { createdAt: 'desc' },
     });
+
+    const hasMore = collections.length > limit;
+    if (hasMore) collections.pop();
+    return { collections, nextCursor: hasMore ? (collections[collections.length - 1]?.id ?? null) : null };
   }
 
   async create(userId: string, data: { name: string; description?: string | undefined }) {

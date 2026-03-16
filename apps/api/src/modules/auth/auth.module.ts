@@ -2,10 +2,9 @@ import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthMiddleware } from './auth.middleware';
 import { SessionMiddleware } from './session.middleware';
-import { PrismaService } from '../../prisma/prisma.service';
 
 @Module({
-  providers: [AuthService, AuthMiddleware, SessionMiddleware, PrismaService],
+  providers: [AuthService, AuthMiddleware, SessionMiddleware],
   exports: [AuthService],
 })
 export class AuthModule {
