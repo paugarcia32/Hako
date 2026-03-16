@@ -8,15 +8,12 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   const headers = new Headers(req.headers);
   headers.delete('host');
 
-  const body =
-    req.method !== 'GET' && req.method !== 'HEAD'
-      ? await req.arrayBuffer()
-      : undefined;
+  const body = req.method !== 'GET' && req.method !== 'HEAD' ? await req.arrayBuffer() : undefined;
 
   const upstream = await fetch(url, {
     method: req.method,
     headers,
-    body,
+    body: body ?? null,
     redirect: 'manual',
   });
 
@@ -34,10 +31,10 @@ async function handler(req: NextRequest): Promise<NextResponse> {
     resHeaders.append('set-cookie', cookie);
   }
 
-  return new NextResponse(
-    [204, 304].includes(upstream.status) ? null : upstream.body,
-    { status: upstream.status, headers: resHeaders },
-  );
+  return new NextResponse([204, 304].includes(upstream.status) ? null : upstream.body, {
+    status: upstream.status,
+    headers: resHeaders,
+  });
 }
 
 export const GET = handler;

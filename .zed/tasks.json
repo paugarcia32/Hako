@@ -1,0 +1,20 @@
+[
+  {
+    "label": "lint",
+    "command": "pnpm lint",
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "lint --fix",
+    "command": "pnpm biome check --write .",
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "typecheck",
+    "command": "pnpm typecheck",
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  }
+]

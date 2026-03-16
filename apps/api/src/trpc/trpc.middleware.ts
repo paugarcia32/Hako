@@ -1,41 +1,39 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
-import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import type { Request, Response, NextFunction } from 'express';
-import { TrpcService } from './trpc.service';
-import { ItemsRouter } from '../modules/items/items.router';
-import { CollectionsRouter } from '../modules/collections/collections.router';
+import { Injectable, type NestMiddleware } from '@nestjs/common';
+import { createExpressMiddleware } from '@trpc/server/adapters/express';
+import type { NextFunction, Request, Response } from 'express';
+import type { CollectionsRouter } from '../modules/collections/collections.router';
+import type { ItemsRouter } from '../modules/items/items.router';
+import type { TrpcService } from './trpc.service';
+
+function createAppRouter(trpc: TrpcService, items: ItemsRouter, collections: CollectionsRouter) {
+  return trpc.mergeRouters(
+    trpc.router({ items: items.router }),
+    trpc.router({ collections: collections.router }),
+  );
+}
+
+export type AppRouter = ReturnType<typeof createAppRouter>;
 
 @Injectable()
 export class TrpcMiddleware implements NestMiddleware {
-  private readonly appRouter: ReturnType<TrpcService['mergeRouters']>;
+  private readonly handler: ReturnType<typeof createExpressMiddleware>;
 
   constructor(
     private readonly trpc: TrpcService,
     private readonly items: ItemsRouter,
     private readonly collections: CollectionsRouter,
   ) {
-    this.appRouter = this.trpc.mergeRouters(
-      this.trpc.router({ items: this.items.router }),
-      this.trpc.router({ collections: this.collections.router }),
-    );
+    const appRouter = createAppRouter(this.trpc, this.items, this.collections);
+    this.handler = createExpressMiddleware({
+      router: appRouter,
+      createContext: ({ req }) => ({
+        userId: (req as Request & { userId?: string }).userId ?? '',
+        req,
+      }),
+    });
   }
 
   use(req: Request, res: Response, next: NextFunction) {
-    fetchRequestHandler({
-      endpoint: '/trpc',
-      req: req as unknown as globalThis.Request,
-      router: this.appRouter,
-      createContext: () => ({
-        userId: (req as Request & { userId?: string | undefined }).userId ?? '',
-        req,
-      }),
-    })
-      .then((response) => {
-        response.headers.forEach((value, key) => res.setHeader(key, value));
-        res.status(response.status);
-        return response.text();
-      })
-      .then((body) => res.send(body))
-      .catch(next);
+    this.handler(req, res, next);
   }
 }

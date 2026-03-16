@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
-import { TrpcService } from '../../trpc/trpc.service';
-import { CollectionsService } from './collections.service';
+import type { TrpcService } from '../../trpc/trpc.service';
+import type { CollectionsService } from './collections.service';
 
 @Injectable()
 export class CollectionsRouter {
@@ -13,7 +13,12 @@ export class CollectionsRouter {
   get router() {
     return this.trpc.router({
       list: this.trpc.protectedProcedure
-        .input(z.object({ limit: z.number().min(1).max(100).default(50), cursor: z.string().optional() }))
+        .input(
+          z.object({
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().optional(),
+          }),
+        )
         .query(({ ctx, input }) => this.collections.findAll(ctx.userId, input)),
 
       create: this.trpc.protectedProcedure

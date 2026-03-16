@@ -1,17 +1,16 @@
-import Link from 'next/link';
+import { ThemeToggle } from '@/components/theme-toggle';
 import {
-  DocumentTextIcon,
-  LinkIcon,
-  GlobeAltIcon,
   DevicePhoneMobileIcon,
+  DocumentTextIcon,
+  GlobeAltIcon,
+  LinkIcon,
   PlayCircleIcon,
 } from '@heroicons/react/24/outline';
-import { ThemeToggle } from '@/components/theme-toggle';
+import Link from 'next/link';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50">
-
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-10 border-b border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-950/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
@@ -37,11 +36,13 @@ export default function HomePage() {
       {/* ── Hero ───────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-5xl px-6 py-24 text-center">
         <h1 className="text-5xl font-bold tracking-tight leading-tight sm:text-6xl">
-          The internet<br />
+          The internet
+          <br />
           <span className="text-accent-500">can wait.</span>
         </h1>
         <p className="mx-auto mt-5 max-w-lg text-lg text-stone-500 dark:text-stone-400 leading-relaxed">
-          Save anything from the web — articles, tweets, videos, posts — and read it whenever you're ready. No noise, no algorithm. Just your collection.
+          Save anything from the web — articles, tweets, videos, posts — and read it whenever you're
+          ready. No noise, no algorithm. Just your collection.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <Link
@@ -100,9 +101,21 @@ export default function HomePage() {
             Available on
           </h2>
           <div className="flex flex-wrap justify-center gap-3">
-            <PlatformBadge icon={<GlobeAltIcon className="size-5" />} label="Web" sublabel="Any browser" />
-            <PlatformBadge icon={<DevicePhoneMobileIcon className="size-5" />} label="iOS" sublabel="With share extension" />
-            <PlatformBadge icon={<DevicePhoneMobileIcon className="size-5" />} label="Android" sublabel="With share extension" />
+            <PlatformBadge
+              icon={<GlobeAltIcon className="size-5" />}
+              label="Web"
+              sublabel="Any browser"
+            />
+            <PlatformBadge
+              icon={<DevicePhoneMobileIcon className="size-5" />}
+              label="iOS"
+              sublabel="With share extension"
+            />
+            <PlatformBadge
+              icon={<DevicePhoneMobileIcon className="size-5" />}
+              label="Android"
+              sublabel="With share extension"
+            />
           </div>
         </div>
       </section>
@@ -121,12 +134,15 @@ export default function HomePage() {
           </Link>
         </div>
       </footer>
-
     </div>
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 p-5 transition hover:border-stone-300 dark:hover:border-stone-600">
       <div className="mb-3 flex size-9 items-center justify-center rounded-lg bg-accent-50 dark:bg-accent-900/30 text-accent-500">
@@ -138,7 +154,11 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode; titl
   );
 }
 
-function PlatformBadge({ icon, label, sublabel }: { icon: React.ReactNode; label: string; sublabel: string }) {
+function PlatformBadge({
+  icon,
+  label,
+  sublabel,
+}: { icon: React.ReactNode; label: string; sublabel: string }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 px-4 py-3">
       <span className="text-stone-500 dark:text-stone-400">{icon}</span>

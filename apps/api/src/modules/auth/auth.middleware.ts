@@ -1,5 +1,5 @@
 import { Injectable, type NestMiddleware } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 // biome-ignore lint/style/useImportType: needed for emitDecoratorMetadata
 import { AuthService } from './auth.service';
 
@@ -14,12 +14,14 @@ export class AuthMiddleware implements NestMiddleware {
     const savedUrl = req.url;
     const savedBaseUrl = req.baseUrl;
     req.url = req.originalUrl;
+    // biome-ignore lint/suspicious/noExplicitAny: Express req.baseUrl is not in @types/express Request
     (req as any).baseUrl = '';
 
     await this.authService.handler(req, res);
 
     // Restore for downstream middleware
     req.url = savedUrl;
+    // biome-ignore lint/suspicious/noExplicitAny: Express req.baseUrl is not in @types/express Request
     (req as any).baseUrl = savedBaseUrl;
 
     if (!res.headersSent) next();

@@ -3,7 +3,10 @@ import type { Request } from 'express';
 // biome-ignore lint/style/useImportType: needed for emitDecoratorMetadata
 import { PrismaService } from '../../prisma/prisma.service';
 
-type NodeHandler = (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => Promise<void>;
+type NodeHandler = (
+  req: import('node:http').IncomingMessage,
+  res: import('node:http').ServerResponse,
+) => Promise<void>;
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -22,26 +25,29 @@ export class AuthService implements OnModuleInit {
     const esmImport = new Function('m', 'return import(m)') as <T>(m: string) => Promise<T>;
 
     const { betterAuth } = await esmImport<typeof import('better-auth')>('better-auth');
-    const { toNodeHandler, fromNodeHeaders } = await esmImport<typeof import('better-auth/node')>('better-auth/node');
-    const { prismaAdapter } = await esmImport<typeof import('better-auth/adapters/prisma')>('better-auth/adapters/prisma');
+    const { toNodeHandler, fromNodeHeaders } =
+      await esmImport<typeof import('better-auth/node')>('better-auth/node');
+    const { prismaAdapter } = await esmImport<typeof import('better-auth/adapters/prisma')>(
+      'better-auth/adapters/prisma',
+    );
 
     this._auth = betterAuth({
       database: prismaAdapter(this.prisma, { provider: 'postgresql' }),
       emailAndPassword: { enabled: true },
       socialProviders: {
         google: {
-          clientId: process.env['GOOGLE_CLIENT_ID']!,
-          clientSecret: process.env['GOOGLE_CLIENT_SECRET']!,
+          clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
         },
       },
       user: {
         fields: { image: 'avatarUrl' },
       },
-      trustedOrigins: [process.env['WEB_ORIGIN'] ?? 'http://localhost:3000'],
-      secret: process.env['BETTER_AUTH_SECRET'],
-      baseURL: process.env['BETTER_AUTH_URL'],
+      trustedOrigins: [process.env.WEB_ORIGIN ?? 'http://localhost:3000'],
+      secret: process.env.BETTER_AUTH_SECRET,
+      baseURL: process.env.BETTER_AUTH_URL,
       advanced: {
-        useSecureCookies: process.env['NODE_ENV'] === 'production',
+        useSecureCookies: process.env.NODE_ENV === 'production',
       },
     });
 

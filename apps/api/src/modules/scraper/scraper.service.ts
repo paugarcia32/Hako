@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
 import type { ContentType } from '@inkbox/types';
+import { Injectable } from '@nestjs/common';
 
 type ScrapeResult = {
   title: string | null;

@@ -1,8 +1,8 @@
 export type ID = string;
 
 export type Timestamp = {
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type PaginatedResponse<T> = {
@@ -19,6 +19,4 @@ export type ApiError = {
   details?: Record<string, unknown>;
 };
 
-export type Result<T, E = ApiError> =
-  | { success: true; data: T }
-  | { success: false; error: E };
+export type Result<T, E = ApiError> = { success: true; data: T } | { success: false; error: E };

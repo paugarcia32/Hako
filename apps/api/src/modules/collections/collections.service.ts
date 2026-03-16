@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import type { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class CollectionsService {
@@ -15,7 +15,10 @@ export class CollectionsService {
 
     const hasMore = collections.length > limit;
     if (hasMore) collections.pop();
-    return { collections, nextCursor: hasMore ? (collections[collections.length - 1]?.id ?? null) : null };
+    return {
+      collections,
+      nextCursor: hasMore ? (collections[collections.length - 1]?.id ?? null) : null,
+    };
   }
 
   async create(userId: string, data: { name: string; description?: string | undefined }) {

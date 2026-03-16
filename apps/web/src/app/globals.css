@@ -2,30 +2,30 @@
 
 @theme {
   /* ─── Typography ─────────────────────────────────────────────────── */
-  --font-sans: var(--font-plus-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-sans: var(--font-plus-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
 
   /* ─── Warm Stone (neutral base, barely warm) ─────────────────────── */
-  --color-stone-50:  #FAFAF8;
-  --color-stone-100: #F4F2EE;
-  --color-stone-200: #EAE6DF;
-  --color-stone-300: #D8D2C9;
-  --color-stone-400: #B5ADA3;
-  --color-stone-500: #8C837A;
-  --color-stone-600: #635C54;
-  --color-stone-700: #312D29;  /* dark border / divider       */
-  --color-stone-800: #1E1C19;  /* dark card / surface          */
-  --color-stone-900: #131110;  /* dark page background         */
-  --color-stone-950: #0C0B0A;  /* dark deepest bg / sidebar    */
+  --color-stone-50: #fafaf8;
+  --color-stone-100: #f4f2ee;
+  --color-stone-200: #eae6df;
+  --color-stone-300: #d8d2c9;
+  --color-stone-400: #b5ada3;
+  --color-stone-500: #8c837a;
+  --color-stone-600: #635c54;
+  --color-stone-700: #312d29; /* dark border / divider       */
+  --color-stone-800: #1e1c19; /* dark card / surface          */
+  --color-stone-900: #131110; /* dark page background         */
+  --color-stone-950: #0c0b0a; /* dark deepest bg / sidebar    */
 
   /* ─── Accent (terracota / Anthropic-orange) ──────────────────────── */
-  --color-accent-50:  #FEF3EC;
-  --color-accent-100: #FBE0CC;
-  --color-accent-200: #F6BE99;
-  --color-accent-300: #EE9567;
-  --color-accent-400: #E07042;
-  --color-accent-500: #C95829;
-  --color-accent-600: #A3431C;
-  --color-accent-700: #7A3011;
+  --color-accent-50: #fef3ec;
+  --color-accent-100: #fbe0cc;
+  --color-accent-200: #f6be99;
+  --color-accent-300: #ee9567;
+  --color-accent-400: #e07042;
+  --color-accent-500: #c95829;
+  --color-accent-600: #a3431c;
+  --color-accent-700: #7a3011;
   --color-accent-900: #351105;
 }
 

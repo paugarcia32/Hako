@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 // not user input, so there is no XSS risk.
 const ThemeScript = () => (
   <script
-  // biome-ignore lint/security/noDangerouslySetInnerHtml: static theme init script
+    // biome-ignore lint/security/noDangerouslySetInnerHtml: static theme init script
     dangerouslySetInnerHTML={{
       __html: `(function(){try{var s=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(s==='dark'||(!s&&d)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
     }}

@@ -1,9 +1,13 @@
 'use client';
 
+import { signOut, useSession } from '@/lib/auth';
+import {
+  ArrowRightStartOnRectangleIcon,
+  InboxIcon,
+  RectangleStackIcon,
+} from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { InboxIcon, RectangleStackIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
-import { signOut, useSession } from '@/lib/auth';
 import { ThemeToggle } from './theme-toggle';
 
 const NAV_ITEMS = [
@@ -25,7 +29,9 @@ export function Sidebar() {
     <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950">
       {/* Logo + Theme */}
       <div className="flex items-center justify-between px-5 py-5">
-        <span className="text-lg font-bold tracking-tight text-stone-900 dark:text-stone-100">inkbox</span>
+        <span className="text-lg font-bold tracking-tight text-stone-900 dark:text-stone-100">
+          inkbox
+        </span>
         <ThemeToggle />
       </div>
 

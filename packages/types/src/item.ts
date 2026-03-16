@@ -17,8 +17,8 @@ export type Item = Timestamp & {
   transcript: string | null;
   isRead: boolean;
   isFavorite: boolean;
-  readAt: Date | null;
-  tags: string[];
+  readAt: string | null;
+  tags?: string[];
 };
 
 export type CreateItemInput = {

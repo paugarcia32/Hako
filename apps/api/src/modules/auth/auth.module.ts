@@ -1,6 +1,6 @@
-import { Module, MiddlewareConsumer } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { type MiddlewareConsumer, Module } from '@nestjs/common';
 import { AuthMiddleware } from './auth.middleware';
+import { AuthService } from './auth.service';
 import { SessionMiddleware } from './session.middleware';
 
 @Module({

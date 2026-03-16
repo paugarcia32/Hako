@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { CollectionsService } from './collections.service';
 import { CollectionsRouter } from './collections.router';
+import { CollectionsService } from './collections.service';
 
 @Module({
   providers: [CollectionsService, CollectionsRouter],

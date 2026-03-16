@@ -28,7 +28,15 @@
       "Bash(ls -la \"/c/Users/Pau/dev/inkbox/node_modules/.pnpm/\"*\"better-auth@1.5.5\"*)",
       "Bash(xargs grep -l \"getCookie\")",
       "Bash(pnpm add @nestjs/throttler)",
-      "Bash(pnpm typecheck)"
+      "Bash(pnpm typecheck)",
+      "Bash(npx biome check --reporter=github)",
+      "Bash(npx biome check --write --files-ignore-unknown=true apps/ packages/)",
+      "Bash(npx biome check --reporter=github apps/ packages/)",
+      "Bash(pnpm biome check --reporter=summary)",
+      "Bash(pnpm biome check)",
+      "Bash(pnpm biome check --write apps/web/src/app/\\\\\\(app\\\\\\)/inbox/page.tsx package.json)",
+      "WebFetch(domain:biomejs.dev)",
+      "WebFetch(domain:zed.dev)"
     ]
   }
 }
