@@ -33,7 +33,7 @@ inkbox/
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org) >= 20
+- [Node.js](https://nodejs.org) >= 22 (use `nvm use` to apply the version in `.nvmrc`)
 - [pnpm](https://pnpm.io) >= 9 — `npm install -g pnpm`
 - PostgreSQL and Redis (see options below)
 
@@ -101,9 +101,14 @@ pnpm build        # Compile to dist/
 pnpm start        # Run compiled dist/main.js
 pnpm typecheck    # Type check without emitting
 
-pnpm db:push      # Push schema to DB (dev, no migration files)
-pnpm db:migrate   # Create and apply a migration
-pnpm db:studio    # Open Prisma Studio at http://localhost:5555
+pnpm test           # Run tests (requires inkbox_test DB)
+pnpm test:watch     # Watch mode
+pnpm test:coverage  # With coverage report
+
+pnpm db:push           # Push schema to DB (dev, no migration files)
+pnpm db:migrate        # Create and apply a migration
+pnpm db:migrate:test   # Push schema to test DB (inkbox_test)
+pnpm db:studio         # Open Prisma Studio at http://localhost:5555
 ```
 
 ### Web only (`apps/web`)
@@ -132,23 +137,46 @@ cd apps/api && pnpm db:studio
 
 ## Tests
 
-> Test setup is not yet configured. When added, tests will live next to the source files:
->
-> - `apps/api/src/**/*.spec.ts` — NestJS unit + integration tests (Jest)
-> - `apps/web/src/**/*.test.tsx` — React component tests (Vitest + Testing Library)
+### API (`apps/api`)
 
-Run all tests from the root:
+Tests use **Vitest** with a real PostgreSQL test database. Test files live next to the source files they test (`*.spec.ts`).
+
+#### First-time setup
+
+Create the test database and push the schema:
 
 ```bash
+cd apps/api
+pnpm db:migrate:test
+```
+
+This creates `inkbox_test` on your local PostgreSQL instance and applies the schema. Requires `apps/api/.env.test` to be configured (credentials default to `postgres:password@localhost:5432`).
+
+#### Running tests
+
+```bash
+# From the repo root — runs all test suites via Turborepo
 pnpm test
+
+# From apps/api — run API tests only
+cd apps/api
+pnpm test              # Run once (CI mode)
+pnpm test:watch        # Watch mode (development)
+pnpm test:coverage     # Run with coverage report
 ```
 
-Run tests for a specific app:
+#### What's tested
 
-```bash
-cd apps/api && pnpm test
-cd apps/web && pnpm test
-```
+| File | Type | Description |
+|---|---|---|
+| `scraper.service.spec.ts` | Unit | URL type detection logic |
+| `session.middleware.spec.ts` | Unit (mocked) | Session extraction middleware |
+| `items.service.spec.ts` | Integration | All ItemsService DB operations |
+| `collections.service.spec.ts` | Integration | All CollectionsService DB operations |
+| `items.router.spec.ts` | tRPC | Items procedures — auth, validation, business logic |
+| `collections.router.spec.ts` | tRPC | Collections procedures — auth, public routes, validation |
+
+tRPC procedures are tested using `router.createCaller(ctx)` — no HTTP server needed.
 
 ## Environment variables
 
