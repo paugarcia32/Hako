@@ -4,7 +4,7 @@ import { AddToCollectionPopover } from '@/components/add-to-collection-popover';
 import { trpc } from '@/lib/trpc';
 import type { Item } from '@inkbox/types';
 import { COLLECTION_COLORS } from '@inkbox/types';
-import { ArchiveBoxIcon, FolderPlusIcon, GlobeAltIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ArchiveBoxArrowDownIcon, ArchiveBoxIcon, FolderPlusIcon, GlobeAltIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useRef, useState } from 'react';
 
 function getFaviconUrl(url: string): string | null {
@@ -101,6 +101,10 @@ export function ItemRow({
     onSuccess: () => void utils.items.list.invalidate(),
   });
 
+  const unarchive = trpc.items.unarchive.useMutation({
+    onSuccess: () => void utils.items.list.invalidate(),
+  });
+
   const deleteItem = trpc.items.delete.useMutation({
     onSuccess: () => void utils.items.list.invalidate(),
   });
@@ -165,19 +169,34 @@ export function ItemRow({
             isHovered ? 'opacity-100' : 'opacity-0',
           ].join(' ')}
         >
-          {/* Archive */}
-          <button
-            type="button"
-            title="Archive"
-            disabled={archive.isPending || item.isArchived}
-            onClick={(e) => {
-              e.stopPropagation();
-              archive.mutate({ id: item.id });
-            }}
-            className="rounded p-1 text-stone-400 transition-colors hover:bg-stone-200/60 hover:text-stone-600 disabled:opacity-30 dark:hover:bg-stone-700/60 dark:hover:text-stone-300"
-          >
-            <ArchiveBoxIcon className="size-3.5" />
-          </button>
+          {/* Archive / Unarchive */}
+          {item.isArchived ? (
+            <button
+              type="button"
+              title="Unarchive"
+              disabled={unarchive.isPending}
+              onClick={(e) => {
+                e.stopPropagation();
+                unarchive.mutate({ id: item.id });
+              }}
+              className="rounded p-1 text-stone-400 transition-colors hover:bg-stone-200/60 hover:text-stone-600 disabled:opacity-30 dark:hover:bg-stone-700/60 dark:hover:text-stone-300"
+            >
+              <ArchiveBoxArrowDownIcon className="size-3.5" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              title="Archive"
+              disabled={archive.isPending}
+              onClick={(e) => {
+                e.stopPropagation();
+                archive.mutate({ id: item.id });
+              }}
+              className="rounded p-1 text-stone-400 transition-colors hover:bg-stone-200/60 hover:text-stone-600 disabled:opacity-30 dark:hover:bg-stone-700/60 dark:hover:text-stone-300"
+            >
+              <ArchiveBoxIcon className="size-3.5" />
+            </button>
+          )}
 
           {/* Delete */}
           <button

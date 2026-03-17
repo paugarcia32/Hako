@@ -6,10 +6,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { ThemeToggle } from './theme-toggle';
 
 export function UserMenu() {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -28,6 +27,10 @@ export function UserMenu() {
     setOpen(false);
     await signOut();
     router.push('/login');
+  }
+
+  if (isPending) {
+    return <div className="size-8 rounded-full bg-stone-200 dark:bg-stone-700 animate-pulse" />;
   }
 
   if (!session?.user) return null;
@@ -80,12 +83,6 @@ export function UserMenu() {
             <Cog6ToothIcon className="size-4 shrink-0 text-stone-400" />
             Settings
           </Link>
-
-          {/* Theme toggle */}
-          <div className="flex items-center justify-between px-3.5 py-2">
-            <span className="text-sm text-stone-700 dark:text-stone-300">Theme</span>
-            <ThemeToggle />
-          </div>
 
           <div className="my-1 h-px bg-stone-100 dark:bg-stone-800" />
 

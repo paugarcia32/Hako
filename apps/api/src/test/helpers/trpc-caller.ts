@@ -1,5 +1,6 @@
 import { CollectionsRouter } from '../../modules/collections/collections.router';
 import { ItemsRouter } from '../../modules/items/items.router';
+import { UsersRouter } from '../../modules/users/users.router';
 import { TrpcService } from '../../trpc/trpc.service';
 import { getTestModule } from './create-test-module';
 
@@ -11,10 +12,12 @@ export async function getCaller(userId?: string) {
   const trpc = m.get(TrpcService);
   const items = m.get(ItemsRouter);
   const collections = m.get(CollectionsRouter);
+  const users = m.get(UsersRouter);
 
   const appRouter = trpc.mergeRouters(
     trpc.router({ items: items.router }),
     trpc.router({ collections: collections.router }),
+    trpc.router({ users: users.router }),
   );
 
   const ctx = {
