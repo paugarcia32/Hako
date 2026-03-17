@@ -142,15 +142,15 @@ describe('ItemsService', () => {
     });
   });
 
-  describe('markAsRead', () => {
-    it('sets isRead to true and sets a readAt timestamp', async () => {
+  describe('archive', () => {
+    it('sets isArchived to true and sets an archivedAt timestamp', async () => {
       const user = await createTestUser();
       const item = await createTestItem(user.id);
 
-      const updated = await service.markAsRead(user.id, item.id);
+      const updated = await service.archive(user.id, item.id);
 
-      expect(updated.isRead).toBe(true);
-      expect(updated.readAt).not.toBeNull();
+      expect(updated.isArchived).toBe(true);
+      expect(updated.archivedAt).not.toBeNull();
     });
 
     it('throws when item belongs to a different user', async () => {
@@ -158,7 +158,7 @@ describe('ItemsService', () => {
       const user2 = await createTestUser();
       const item = await createTestItem(user2.id);
 
-      await expect(service.markAsRead(user1.id, item.id)).rejects.toThrow();
+      await expect(service.archive(user1.id, item.id)).rejects.toThrow();
     });
   });
 

@@ -1,23 +1,76 @@
 import type { CreateItemInput } from '@inkbox/types';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ScraperService } from '../scraper/scraper.service';
+
+type FindAllOptions = {
+  limit: number;
+  cursor?: string | undefined;
+  /** Inbox: non-archived items with no collection */
+  inboxOnly?: boolean | undefined;
+  /** Archive page: only archived items */
+  archivedOnly?: boolean | undefined;
+  /** All page with toggle: include archived items too */
+  includeArchived?: boolean | undefined;
+  /** Collection detail page: filter by collection */
+  collectionId?: string | undefined;
+};
 
 @Injectable()
 export class ItemsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ItemsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly scraper: ScraperService,
+  ) {}
 
   async create(userId: string, input: CreateItemInput) {
-    return this.prisma.item.create({
-      data: {
-        userId,
-        url: input.url,
-      },
+    const item = await this.prisma.item.create({
+      data: { userId, url: input.url },
     });
+    void this.scrapeAndUpdate(item.id, input.url);
+    return item;
   }
 
-  async findAll(userId: string, { limit, cursor }: { limit: number; cursor?: string | undefined }) {
+  private async scrapeAndUpdate(id: string, url: string) {
+    try {
+      const result = await this.scraper.scrape(url);
+      await this.prisma.item.update({
+        where: { id },
+        data: {
+          title: result.title,
+          description: result.description,
+          imageUrl: result.imageUrl,
+          type: result.type,
+          status: 'done',
+        },
+      });
+    } catch (err) {
+      this.logger.warn(`scrapeAndUpdate failed for item ${id}: ${String(err)}`);
+      await this.prisma.item.update({
+        where: { id },
+        data: { status: 'failed' },
+      });
+    }
+  }
+
+  async findAll(userId: string, { limit, cursor, inboxOnly, archivedOnly, includeArchived, collectionId }: FindAllOptions) {
+    const where = {
+      userId,
+      // Collection detail page: filter by specific collection
+      ...(collectionId ? { collections: { some: { collectionId } } } : {}),
+      // Inbox: non-archived + not in any collection
+      ...(inboxOnly ? { isArchived: false, collections: { none: {} } } : {}),
+      // Archive page: only archived
+      ...(archivedOnly ? { isArchived: true } : {}),
+      // Default (All page, no special flag): hide archived unless explicitly requested
+      ...(!inboxOnly && !archivedOnly && !includeArchived && !collectionId ? { isArchived: false } : {}),
+    };
+
     const items = await this.prisma.item.findMany({
-      where: { userId },
+      where,
+      include: { collections: { include: { collection: true } } },
       take: limit + 1,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { createdAt: 'desc' },
@@ -25,19 +78,34 @@ export class ItemsService {
 
     const hasMore = items.length > limit;
     if (hasMore) items.pop();
-    return { items, nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null };
+
+    const mapped = items.map(({ collections, ...item }) => ({
+      ...item,
+      collections: collections.map((ci) => ({
+        collectionId: ci.collectionId,
+        collectionName: ci.collection.name,
+        collectionColor: ci.collection.color,
+      })),
+    }));
+
+    return { items: mapped, nextCursor: hasMore ? (mapped[mapped.length - 1]?.id ?? null) : null };
   }
 
   async findOne(userId: string, id: string) {
-    return this.prisma.item.findFirst({
+    return this.prisma.item.findFirst({ where: { id, userId } });
+  }
+
+  async archive(userId: string, id: string) {
+    return this.prisma.item.update({
       where: { id, userId },
+      data: { isArchived: true, archivedAt: new Date() },
     });
   }
 
-  async markAsRead(userId: string, id: string) {
+  async unarchive(userId: string, id: string) {
     return this.prisma.item.update({
       where: { id, userId },
-      data: { isRead: true, readAt: new Date() },
+      data: { isArchived: false, archivedAt: null },
     });
   }
 
@@ -49,8 +117,6 @@ export class ItemsService {
   }
 
   async delete(userId: string, id: string) {
-    return this.prisma.item.delete({
-      where: { id, userId },
-    });
+    return this.prisma.item.delete({ where: { id, userId } });
   }
 }

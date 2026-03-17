@@ -4,6 +4,12 @@ export type ContentType = 'article' | 'youtube' | 'tweet' | 'link';
 
 export type ItemStatus = 'pending' | 'processing' | 'done' | 'failed';
 
+export type ItemCollection = {
+  collectionId: string;
+  collectionName: string;
+  collectionColor: string;
+};
+
 export type Item = Timestamp & {
   id: ID;
   userId: ID;
@@ -15,10 +21,11 @@ export type Item = Timestamp & {
   imageUrl: string | null;
   content: string | null;
   transcript: string | null;
-  isRead: boolean;
+  isArchived: boolean;
   isFavorite: boolean;
-  readAt: string | null;
+  archivedAt: string | null;
   tags?: string[];
+  collections?: ItemCollection[];
 };
 
 export type CreateItemInput = {

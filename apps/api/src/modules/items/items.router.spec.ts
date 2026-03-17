@@ -30,9 +30,9 @@ describe('items tRPC router', () => {
       });
     });
 
-    it('items.markAsRead rejects unauthenticated caller with UNAUTHORIZED', async () => {
+    it('items.archive rejects unauthenticated caller with UNAUTHORIZED', async () => {
       const caller = await getCaller();
-      await expect(caller.items.markAsRead({ id: 'some-id' })).rejects.toMatchObject({
+      await expect(caller.items.archive({ id: 'some-id' })).rejects.toMatchObject({
         code: 'UNAUTHORIZED',
       });
     });
@@ -161,16 +161,16 @@ describe('items tRPC router', () => {
     });
   });
 
-  describe('items.markAsRead', () => {
-    it('marks the item as read', async () => {
+  describe('items.archive', () => {
+    it('archives the item', async () => {
       const user = await createTestUser();
       const item = await createTestItem(user.id);
       const caller = await getCaller(user.id);
 
-      const updated = await caller.items.markAsRead({ id: item.id });
+      const updated = await caller.items.archive({ id: item.id });
 
-      expect(updated.isRead).toBe(true);
-      expect(updated.readAt).not.toBeNull();
+      expect(updated.isArchived).toBe(true);
+      expect(updated.archivedAt).not.toBeNull();
     });
 
     it('throws when item belongs to a different user', async () => {
@@ -179,7 +179,7 @@ describe('items tRPC router', () => {
       const item = await createTestItem(user2.id);
       const caller = await getCaller(user1.id);
 
-      await expect(caller.items.markAsRead({ id: item.id })).rejects.toThrow();
+      await expect(caller.items.archive({ id: item.id })).rejects.toThrow();
     });
   });
 

@@ -17,6 +17,10 @@ export class ItemsRouter {
           z.object({
             limit: z.number().min(1).max(100).default(50),
             cursor: z.string().optional(),
+            inboxOnly: z.boolean().optional(),
+            archivedOnly: z.boolean().optional(),
+            includeArchived: z.boolean().optional(),
+            collectionId: z.string().optional(),
           }),
         )
         .query(({ ctx, input }) => this.items.findAll(ctx.userId, input)),
@@ -25,9 +29,13 @@ export class ItemsRouter {
         .input(z.object({ url: z.string().url() }))
         .mutation(({ ctx, input }) => this.items.create(ctx.userId, input)),
 
-      markAsRead: this.trpc.protectedProcedure
+      archive: this.trpc.protectedProcedure
         .input(z.object({ id: z.string() }))
-        .mutation(({ ctx, input }) => this.items.markAsRead(ctx.userId, input.id)),
+        .mutation(({ ctx, input }) => this.items.archive(ctx.userId, input.id)),
+
+      unarchive: this.trpc.protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .mutation(({ ctx, input }) => this.items.unarchive(ctx.userId, input.id)),
 
       toggleFavorite: this.trpc.protectedProcedure
         .input(z.object({ id: z.string(), isFavorite: z.boolean() }))

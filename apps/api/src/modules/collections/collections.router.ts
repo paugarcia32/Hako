@@ -12,6 +12,10 @@ export class CollectionsRouter {
 
   get router() {
     return this.trpc.router({
+      getById: this.trpc.protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .query(({ ctx, input }) => this.collections.getById(ctx.userId, input.id)),
+
       list: this.trpc.protectedProcedure
         .input(
           z.object({
@@ -26,14 +30,39 @@ export class CollectionsRouter {
           z.object({
             name: z.string().min(1),
             description: z.string().optional(),
+            color: z.string().optional(),
           }),
         )
         .mutation(({ ctx, input }) => this.collections.create(ctx.userId, input)),
+
+      update: this.trpc.protectedProcedure
+        .input(
+          z.object({
+            id: z.string(),
+            name: z.string().min(1).optional(),
+            color: z.string().optional(),
+          }),
+        )
+        .mutation(({ ctx, input }) =>
+          this.collections.update(ctx.userId, input.id, { name: input.name, color: input.color }),
+        ),
+
+      delete: this.trpc.protectedProcedure
+        .input(z.object({ id: z.string(), deleteItems: z.boolean() }))
+        .mutation(({ ctx, input }) =>
+          this.collections.delete(ctx.userId, input.id, input.deleteItems),
+        ),
 
       addItem: this.trpc.protectedProcedure
         .input(z.object({ collectionId: z.string(), itemId: z.string() }))
         .mutation(({ ctx, input }) =>
           this.collections.addItem(ctx.userId, input.collectionId, input.itemId),
+        ),
+
+      removeItem: this.trpc.protectedProcedure
+        .input(z.object({ collectionId: z.string(), itemId: z.string() }))
+        .mutation(({ ctx, input }) =>
+          this.collections.removeItem(ctx.userId, input.collectionId, input.itemId),
         ),
 
       byShareToken: this.trpc.publicProcedure
