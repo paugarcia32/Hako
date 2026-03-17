@@ -80,6 +80,8 @@ function ItemHoverCard({ item, top, left }: HoverCardProps) {
 interface ItemRowProps {
   item: Item;
   showCollection?: boolean;
+  /** Show a subtle archive indicator when item.isArchived is true */
+  showArchivedBadge?: boolean;
   onOpen: (item: Item) => void;
   /** ID of whichever item is currently hovered in the list (managed by parent) */
   hoveredId: string | null;
@@ -89,6 +91,7 @@ interface ItemRowProps {
 export function ItemRow({
   item,
   showCollection = false,
+  showArchivedBadge = false,
   onOpen,
   hoveredId,
   onHoverChange,
@@ -271,6 +274,16 @@ export function ItemRow({
         <span className="ml-3 shrink-0 text-xs text-stone-400 dark:text-stone-500">
           {hostname}
         </span>
+
+        {/* Archived indicator — only when "show archived" filter is active */}
+        {showArchivedBadge && item.isArchived && (
+          <span className="group/archived relative ml-1 shrink-0">
+            <ArchiveBoxIcon className="size-3 text-stone-300 dark:text-stone-600" />
+            <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-stone-200 bg-white px-1.5 py-0.5 text-[11px] text-stone-500 shadow-sm group-hover/archived:block dark:border-stone-700 dark:bg-stone-900 dark:text-stone-400">
+              Archived
+            </span>
+          </span>
+        )}
 
         {/* Collection badge(s) — All page only */}
         {showCollection && firstCollection && (() => {

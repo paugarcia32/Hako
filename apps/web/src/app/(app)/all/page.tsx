@@ -200,6 +200,7 @@ export default function AllPage() {
                             key={item.id}
                             item={item}
                             showCollection={groupBy !== 'collection'}
+                            showArchivedBadge={showArchived}
                             onOpen={setSelectedItem}
                             hoveredId={hoveredId}
                             onHoverChange={setHoveredId}
@@ -218,6 +219,7 @@ export default function AllPage() {
                   key={item.id}
                   item={item}
                   showCollection={true}
+                  showArchivedBadge={showArchived}
                   onOpen={setSelectedItem}
                   hoveredId={hoveredId}
                   onHoverChange={setHoveredId}
