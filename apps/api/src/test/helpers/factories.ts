@@ -26,6 +26,7 @@ export async function createTestItem(
     isRead: boolean;
     isFavorite: boolean;
     isPublic: boolean;
+    isArchived: boolean;
   }> = {},
 ): Promise<Item> {
   return prisma.item.create({

@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { closeTestModule } from '../../test/helpers/create-test-module';
 import { truncateAll } from '../../test/helpers/db';
-import { createTestItem, createTestUser } from '../../test/helpers/factories';
+import { createTestCollection, createTestItem, createTestUser } from '../../test/helpers/factories';
 import { prisma } from '../../test/helpers/prisma';
 import { getCaller } from '../../test/helpers/trpc-caller';
 
@@ -47,6 +47,13 @@ describe('items tRPC router', () => {
     it('items.delete rejects unauthenticated caller with UNAUTHORIZED', async () => {
       const caller = await getCaller();
       await expect(caller.items.delete({ id: 'some-id' })).rejects.toMatchObject({
+        code: 'UNAUTHORIZED',
+      });
+    });
+
+    it('items.unarchive rejects unauthenticated caller with UNAUTHORIZED', async () => {
+      const caller = await getCaller();
+      await expect(caller.items.unarchive({ id: 'some-id' })).rejects.toMatchObject({
         code: 'UNAUTHORIZED',
       });
     });
@@ -132,6 +139,58 @@ describe('items tRPC router', () => {
 
       await expect(caller.items.list({ limit: 101 })).rejects.toThrow();
     });
+
+    it('hides archived items by default', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id);
+      await (await getCaller(user.id)).items.archive({ id: item.id });
+      await createTestItem(user.id);
+      const caller = await getCaller(user.id);
+
+      const result = await caller.items.list({});
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]?.isArchived).toBe(false);
+    });
+
+    it('includes archived items when includeArchived is true', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id);
+      await (await getCaller(user.id)).items.archive({ id: item.id });
+      await createTestItem(user.id);
+      const caller = await getCaller(user.id);
+
+      const result = await caller.items.list({ includeArchived: true });
+
+      expect(result.items).toHaveLength(2);
+    });
+
+    it('returns only archived items when archivedOnly is true', async () => {
+      const user = await createTestUser();
+      const archived = await createTestItem(user.id);
+      await (await getCaller(user.id)).items.archive({ id: archived.id });
+      await createTestItem(user.id);
+      const caller = await getCaller(user.id);
+
+      const result = await caller.items.list({ archivedOnly: true });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]?.isArchived).toBe(true);
+    });
+
+    it('filters items by collectionId', async () => {
+      const user = await createTestUser();
+      const col1 = await createTestCollection(user.id);
+      const col2 = await createTestCollection(user.id);
+      const caller = await getCaller(user.id);
+      const item1 = await caller.items.create({ url: 'https://example.com/1', collectionId: col1.id });
+      await caller.items.create({ url: 'https://example.com/2', collectionId: col2.id });
+
+      const result = await caller.items.list({ collectionId: col1.id });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]?.id).toBe(item1.id);
+    });
   });
 
   describe('items.create', () => {
@@ -158,6 +217,17 @@ describe('items tRPC router', () => {
 
       // @ts-expect-error — intentionally passing invalid input
       await expect(caller.items.create({})).rejects.toThrow();
+    });
+
+    it('links item to collection when collectionId is provided', async () => {
+      const user = await createTestUser();
+      const collection = await createTestCollection(user.id);
+      const caller = await getCaller(user.id);
+
+      await caller.items.create({ url: 'https://example.com/new', collectionId: collection.id });
+
+      const result = await caller.items.list({ collectionId: collection.id });
+      expect(result.items).toHaveLength(1);
     });
   });
 
@@ -211,6 +281,29 @@ describe('items tRPC router', () => {
 
       // @ts-expect-error — intentionally passing invalid input
       await expect(caller.items.toggleFavorite({ id: item.id })).rejects.toThrow();
+    });
+  });
+
+  describe('items.unarchive', () => {
+    it('unarchives the item', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id);
+      const caller = await getCaller(user.id);
+      await caller.items.archive({ id: item.id });
+
+      const updated = await caller.items.unarchive({ id: item.id });
+
+      expect(updated.isArchived).toBe(false);
+      expect(updated.archivedAt).toBeNull();
+    });
+
+    it('throws when item belongs to a different user', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      const item = await createTestItem(user2.id);
+      const caller = await getCaller(user1.id);
+
+      await expect(caller.items.unarchive({ id: item.id })).rejects.toThrow();
     });
   });
 

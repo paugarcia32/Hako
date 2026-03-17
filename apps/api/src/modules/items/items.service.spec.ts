@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { truncateAll } from '../../test/helpers/db';
-import { createTestItem, createTestUser } from '../../test/helpers/factories';
+import { createTestCollection, createTestItem, createTestUser } from '../../test/helpers/factories';
 import { prisma } from '../../test/helpers/prisma';
 import { closeTestModule, getTestModule } from '../../test/helpers/create-test-module';
 import { ItemsService } from './items.service';
@@ -34,6 +34,29 @@ describe('ItemsService', () => {
 
       expect(item.type).toBe('link');
       expect(item.status).toBe('pending');
+    });
+
+    it('creates a CollectionItem record when collectionId is provided', async () => {
+      const user = await createTestUser();
+      const collection = await createTestCollection(user.id);
+
+      const item = await service.create(user.id, {
+        url: 'https://example.com',
+        collectionId: collection.id,
+      });
+
+      const link = await prisma.collectionItem.findFirst({
+        where: { itemId: item.id, collectionId: collection.id },
+      });
+      expect(link).not.toBeNull();
+    });
+
+    it('does not create a CollectionItem when no collectionId is provided', async () => {
+      const user = await createTestUser();
+      const item = await service.create(user.id, { url: 'https://example.com' });
+
+      const links = await prisma.collectionItem.findMany({ where: { itemId: item.id } });
+      expect(links).toHaveLength(0);
     });
   });
 
@@ -94,6 +117,86 @@ describe('ItemsService', () => {
       const result = await service.findAll(user.id, { limit: 10 });
 
       expect(result.nextCursor).toBeNull();
+    });
+
+    it('hides archived items by default', async () => {
+      const user = await createTestUser();
+      await createTestItem(user.id, { isArchived: true });
+      await createTestItem(user.id);
+
+      const result = await service.findAll(user.id, { limit: 10 });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]?.isArchived).toBe(false);
+    });
+
+    it('includes archived items when includeArchived is true', async () => {
+      const user = await createTestUser();
+      await createTestItem(user.id, { isArchived: true });
+      await createTestItem(user.id);
+
+      const result = await service.findAll(user.id, { limit: 10, includeArchived: true });
+
+      expect(result.items).toHaveLength(2);
+    });
+
+    it('returns only archived items when archivedOnly is true', async () => {
+      const user = await createTestUser();
+      const archived = await createTestItem(user.id, { isArchived: true });
+      await createTestItem(user.id);
+
+      const result = await service.findAll(user.id, { limit: 10, archivedOnly: true });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]?.id).toBe(archived.id);
+    });
+
+    it('returns only non-archived uncollected items when inboxOnly is true', async () => {
+      const user = await createTestUser();
+      const collection = await createTestCollection(user.id);
+
+      const inboxItem = await createTestItem(user.id);
+      await createTestItem(user.id, { isArchived: true });
+      const collectionItem = await createTestItem(user.id);
+      await prisma.collectionItem.create({
+        data: { itemId: collectionItem.id, collectionId: collection.id },
+      });
+
+      const result = await service.findAll(user.id, { limit: 10, inboxOnly: true });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]?.id).toBe(inboxItem.id);
+    });
+
+    it('filters items by collectionId', async () => {
+      const user = await createTestUser();
+      const col1 = await createTestCollection(user.id);
+      const col2 = await createTestCollection(user.id);
+      const item1 = await createTestItem(user.id);
+      const item2 = await createTestItem(user.id);
+      await prisma.collectionItem.create({ data: { itemId: item1.id, collectionId: col1.id } });
+      await prisma.collectionItem.create({ data: { itemId: item2.id, collectionId: col2.id } });
+
+      const result = await service.findAll(user.id, { limit: 10, collectionId: col1.id });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]?.id).toBe(item1.id);
+    });
+
+    it('includes collection metadata on returned items', async () => {
+      const user = await createTestUser();
+      const collection = await createTestCollection(user.id);
+      const item = await createTestItem(user.id);
+      await prisma.collectionItem.create({
+        data: { itemId: item.id, collectionId: collection.id },
+      });
+
+      const result = await service.findAll(user.id, { limit: 10 });
+
+      const found = result.items.find((i) => i.id === item.id);
+      expect(found?.collections).toHaveLength(1);
+      expect(found?.collections[0]?.collectionId).toBe(collection.id);
+      expect(found?.collections[0]?.collectionName).toBe(collection.name);
     });
 
     it('cursor pagination returns next page without duplicates', async () => {
@@ -187,6 +290,27 @@ describe('ItemsService', () => {
       const item = await createTestItem(user2.id);
 
       await expect(service.toggleFavorite(user1.id, item.id, true)).rejects.toThrow();
+    });
+  });
+
+  describe('unarchive', () => {
+    it('sets isArchived to false and clears archivedAt', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id);
+      await service.archive(user.id, item.id);
+
+      const updated = await service.unarchive(user.id, item.id);
+
+      expect(updated.isArchived).toBe(false);
+      expect(updated.archivedAt).toBeNull();
+    });
+
+    it('throws when item belongs to a different user', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      const item = await createTestItem(user2.id);
+
+      await expect(service.unarchive(user1.id, item.id)).rejects.toThrow();
     });
   });
 

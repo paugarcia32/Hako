@@ -43,7 +43,8 @@ export class ItemsService {
   private async scrapeAndUpdate(id: string, url: string) {
     try {
       const result = await this.scraper.scrape(url);
-      await this.prisma.item.update({
+      // updateMany silently skips if the item was deleted before scraping finished
+      await this.prisma.item.updateMany({
         where: { id },
         data: {
           title: result.title,
@@ -55,7 +56,7 @@ export class ItemsService {
       });
     } catch (err) {
       this.logger.warn(`scrapeAndUpdate failed for item ${id}: ${String(err)}`);
-      await this.prisma.item.update({
+      await this.prisma.item.updateMany({
         where: { id },
         data: { status: 'failed' },
       });

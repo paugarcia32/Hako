@@ -372,6 +372,190 @@ describe('ScraperService', () => {
     });
   });
 
+  // ── Twitter/X scraping ───────────────────────────────────────────────────
+
+  describe('Twitter/X scraping', () => {
+    it('extracts title, author and imageUrl from syndication API for a regular tweet', async () => {
+      mockFetchSequence({
+        body: JSON.stringify({
+          __typename: 'Tweet',
+          text: 'Hello world https://t.co/abc123',
+          user: { name: 'Test User', screen_name: 'testuser' },
+          mediaDetails: [{ type: 'photo', media_url_https: 'https://pbs.twimg.com/media/photo.jpg' }],
+        }),
+        isJson: true,
+      });
+
+      const result = await service.scrape('https://x.com/testuser/status/1234567890');
+
+      expect(result.title).toBe('Hello world');
+      expect(result.author).toBe('Test User');
+      expect(result.imageUrl).toBe('https://pbs.twimg.com/media/photo.jpg');
+      expect(result.type).toBe('tweet');
+      expect(result.siteName).toBe('X');
+    });
+
+    it('strips trailing t.co link from tweet text', async () => {
+      mockFetchSequence({
+        body: JSON.stringify({
+          __typename: 'Tweet',
+          text: 'Check this out https://t.co/xyz123',
+          user: { name: 'User' },
+        }),
+        isJson: true,
+      });
+
+      const { title } = await service.scrape('https://x.com/user/status/1111111111');
+
+      expect(title).toBe('Check this out');
+    });
+
+    it('falls through to oEmbed when tweet text is only a t.co link', async () => {
+      mockFetchSequence(
+        {
+          body: JSON.stringify({
+            __typename: 'Tweet',
+            text: 'https://t.co/onlylinkhere',
+            user: { name: 'User' },
+          }),
+          isJson: true,
+        },
+        {
+          body: JSON.stringify({
+            html: '<blockquote><p>Tweet text from oEmbed <a href="https://t.co/link">https://t.co/link</a></p></blockquote>',
+            author_name: 'oEmbed Author',
+          }),
+          isJson: true,
+        },
+      );
+
+      const { title, author, type } = await service.scrape('https://x.com/user/status/2222222222');
+
+      expect(title).toBe('Tweet text from oEmbed');
+      expect(author).toBe('oEmbed Author');
+      expect(type).toBe('tweet');
+    });
+
+    it('oEmbed phase strips <a> t.co elements and remaining HTML tags', async () => {
+      mockFetchSequence(
+        {
+          body: JSON.stringify({ __typename: 'Tweet', text: 'https://t.co/x', user: { name: 'U' } }),
+          isJson: true,
+        },
+        {
+          body: JSON.stringify({
+            html: '<blockquote><p>Real content <b>bold</b> <a href="https://t.co/x">https://t.co/x</a></p></blockquote>',
+            author_name: 'Author',
+          }),
+          isJson: true,
+        },
+      );
+
+      const { title } = await service.scrape('https://x.com/user/status/3333333333');
+
+      expect(title).toBe('Real content bold');
+    });
+
+    it('extracts X Article data from data.article field', async () => {
+      mockFetchSequence({
+        body: JSON.stringify({
+          __typename: 'Tweet',
+          user: { name: 'Article Author', screen_name: 'author' },
+          article: {
+            title: 'My Article Title',
+            preview_text: 'Article preview text here',
+            cover_media: { media_info: { original_img_url: 'https://pbs.twimg.com/cover.jpg' } },
+          },
+        }),
+        isJson: true,
+      });
+
+      const result = await service.scrape('https://x.com/author/status/4444444444');
+
+      expect(result.title).toBe('My Article Title');
+      expect(result.description).toBe('Article preview text here');
+      expect(result.imageUrl).toBe('https://pbs.twimg.com/cover.jpg');
+      expect(result.author).toBe('Article Author');
+      expect(result.type).toBe('article');
+      expect(result.siteName).toBe('X');
+    });
+
+    it('X Article without cover media returns null imageUrl', async () => {
+      mockFetchSequence({
+        body: JSON.stringify({
+          __typename: 'Tweet',
+          user: { name: 'Author' },
+          article: { title: 'Article Without Image', preview_text: 'Some preview' },
+        }),
+        isJson: true,
+      });
+
+      const { imageUrl, title, type } = await service.scrape('https://x.com/user/status/5555555555');
+
+      expect(title).toBe('Article Without Image');
+      expect(imageUrl).toBeNull();
+      expect(type).toBe('article');
+    });
+
+    it('HTML phase strips "Name on X:" prefix from og:title', async () => {
+      mockFetchSequence(
+        // Phase 1: syndication — empty text → falls through
+        { body: JSON.stringify({ __typename: 'Tweet', text: 'https://t.co/x', user: { name: 'U' } }), isJson: true },
+        // Phase 2: oEmbed — empty html → falls through
+        { body: JSON.stringify({ html: '', author_name: 'U' }), isJson: true },
+        // Phase 3: HTML page
+        { body: '<meta property="og:title" content="John on X: \u201CHello world\u201D" />' },
+      );
+
+      const { title } = await service.scrape('https://x.com/john/status/6666666666');
+
+      expect(title).toBe('Hello world');
+    });
+
+    it('HTML phase returns type=article when og:type is article', async () => {
+      mockFetchSequence(
+        { body: JSON.stringify({ __typename: 'Tweet', text: 'https://t.co/x', user: { name: 'U' } }), isJson: true },
+        { body: JSON.stringify({ html: '', author_name: 'U' }), isJson: true },
+        { body: '<meta property="og:type" content="article" /><meta property="og:title" content="Long Article Title" />' },
+      );
+
+      const { type } = await service.scrape('https://x.com/user/status/7777777777');
+
+      expect(type).toBe('article');
+    });
+
+    it('returns nulls with type=tweet when all phases fail', async () => {
+      mockFetchSequence(
+        { body: 'error', status: 500, isJson: true },
+        { body: 'error', status: 500, isJson: true },
+        { body: '', status: 500 },
+      );
+
+      const result = await service.scrape('https://x.com/user/status/9999999999');
+
+      expect(result.title).toBeNull();
+      expect(result.description).toBeNull();
+      expect(result.imageUrl).toBeNull();
+      expect(result.type).toBe('tweet');
+    });
+
+    it('handles twitter.com URLs the same as x.com', async () => {
+      mockFetchSequence({
+        body: JSON.stringify({
+          __typename: 'Tweet',
+          text: 'Tweet from twitter.com domain',
+          user: { name: 'TwitterUser' },
+        }),
+        isJson: true,
+      });
+
+      const { title, type } = await service.scrape('https://twitter.com/user/status/1234500000');
+
+      expect(title).toBe('Tweet from twitter.com domain');
+      expect(type).toBe('tweet');
+    });
+  });
+
   // ── Pinterest scraping ────────────────────────────────────────────────────
 
   describe('Pinterest scraping', () => {
@@ -422,18 +606,19 @@ describe('ScraperService', () => {
       expect(description).toBe('Pin description here');
     });
 
-    it('returns nulls gracefully when oEmbed returns 404', async () => {
+    it('falls back to hostname title when oEmbed returns 404', async () => {
       mockFetchSequence(
         { body: 'Not Found', status: 404, isJson: true },
         { body: '' },
       );
       const result = await service.scrape('https://www.pinterest.com/pin/123/');
-      expect(result.title).toBeNull();
+      // scrapePinterest falls back to hostname when both phases fail
+      expect(result.title).toBe('pinterest.com');
       expect(result.imageUrl).toBeNull();
       expect(result.type).toBe('pinterest');
     });
 
-    it('returns nulls gracefully when oEmbed throws a network error', async () => {
+    it('falls back to hostname title when oEmbed throws a network error', async () => {
       let callCount = 0;
       vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
         callCount++;
@@ -441,7 +626,8 @@ describe('ScraperService', () => {
         return Promise.resolve({ ok: false, status: 500, body: null, json: vi.fn() });
       }));
       const result = await service.scrape('https://www.pinterest.com/pin/123/');
-      expect(result.title).toBeNull();
+      // scrapePinterest falls back to hostname when both phases fail
+      expect(result.title).toBe('pinterest.com');
       expect(result.type).toBe('pinterest');
     });
 

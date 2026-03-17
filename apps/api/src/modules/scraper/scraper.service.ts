@@ -34,51 +34,8 @@ export class ScraperService {
     }
 
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10_000);
-
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (compatible; Inkbox/1.0; +https://inkbox.app)',
-          Accept: 'text/html,application/xhtml+xml',
-        },
-      });
-
-      clearTimeout(timeout);
-
-      if (!response.ok) {
-        return this.empty(type);
-      }
-
-      // Read at most 500 KB to avoid downloading huge pages
-      const reader = response.body?.getReader();
-      if (!reader) return this.empty(type);
-
-      const chunks: Uint8Array[] = [];
-      let totalBytes = 0;
-      const maxBytes = 500_000;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done || !value) break;
-        chunks.push(value);
-        totalBytes += value.byteLength;
-        if (totalBytes >= maxBytes) {
-          await reader.cancel();
-          break;
-        }
-      }
-
-      const html = new TextDecoder().decode(
-        chunks.reduce((acc, chunk) => {
-          const merged = new Uint8Array(acc.byteLength + chunk.byteLength);
-          merged.set(acc, 0);
-          merged.set(chunk, acc.byteLength);
-          return merged;
-        }, new Uint8Array(0)),
-      );
+      const html = await this.fetchHtml(url);
+      if (!html) return this.empty(type);
 
       const title =
         this.extractMeta(html, 'og:title') ||
@@ -191,58 +148,18 @@ export class ScraperService {
     let description: string | null = null;
 
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10_000);
+      const html = await this.fetchHtml(url);
+      if (html) {
+        description =
+          this.extractMeta(html, 'og:description') ||
+          this.extractMeta(html, 'twitter:description') ||
+          this.extractMeta(html, 'description');
 
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          Accept: 'text/html,application/xhtml+xml',
-          'Accept-Language': 'en-US,en;q=0.9',
-        },
-      });
-      clearTimeout(timeout);
-
-      if (response.ok) {
-        const reader = response.body?.getReader();
-        if (reader) {
-          const chunks: Uint8Array[] = [];
-          let totalBytes = 0;
-          const maxBytes = 500_000;
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done || !value) break;
-            chunks.push(value);
-            totalBytes += value.byteLength;
-            if (totalBytes >= maxBytes) {
-              await reader.cancel();
-              break;
-            }
-          }
-
-          const html = new TextDecoder().decode(
-            chunks.reduce((acc, chunk) => {
-              const merged = new Uint8Array(acc.byteLength + chunk.byteLength);
-              merged.set(acc, 0);
-              merged.set(chunk, acc.byteLength);
-              return merged;
-            }, new Uint8Array(0)),
-          );
-
-          description =
-            this.extractMeta(html, 'og:description') ||
-            this.extractMeta(html, 'twitter:description') ||
-            this.extractMeta(html, 'description');
-
-          if (!title) {
-            title =
-              this.extractMeta(html, 'og:title') ||
-              this.extractMeta(html, 'twitter:title') ||
-              this.extractTitle(html);
-          }
+        if (!title) {
+          title =
+            this.extractMeta(html, 'og:title') ||
+            this.extractMeta(html, 'twitter:title') ||
+            this.extractTitle(html);
         }
       }
     } catch (err) {
@@ -259,7 +176,6 @@ export class ScraperService {
   }
 
   private async scrapeTwitter(url: string): Promise<ScrapeResult> {
-    const type: ContentType = 'tweet';
     const siteName = 'X';
 
     // Extract numeric tweet ID from the URL
@@ -271,6 +187,8 @@ export class ScraperService {
     if (tweetId) {
       // Phase 1: Syndication API — same endpoint Twitter's own embed widget calls.
       // Requires a token derived from the tweet ID (added ~2024).
+      // For X Articles __typename will be "Article" (not "Tweet") — we detect that
+      // here and fall through to the HTML phase which handles articles properly.
       try {
         const token = this.tweetToken(tweetId);
         const syndicationUrl =
@@ -295,25 +213,50 @@ export class ScraperService {
 
         if (response.ok) {
           const data = (await response.json()) as {
+            __typename?: string;
             text?: string;
             user?: { name?: string; screen_name?: string };
             mediaDetails?: Array<{
               type?: string;
               media_url_https?: string;
             }>;
+            // X Articles: the tweet is a wrapper; the actual content lives here
+            article?: {
+              title?: string;
+              preview_text?: string;
+              cover_media?: {
+                media_info?: { original_img_url?: string };
+              };
+            };
           };
 
-          this.logger.log(`Twitter syndication data keys: ${Object.keys(data).join(', ')}`);
+          this.logger.log(`Twitter syndication __typename=${data.__typename ?? 'n/a'} keys: ${Object.keys(data).join(', ')}`);
 
-          const title = sanitize(this.cleanTweetText(data.text ?? ''));
-          const author = sanitize(data.user?.name ?? data.user?.screen_name ?? null);
+          // If the tweet wraps an X Article, use the article's own metadata
+          if (data.article) {
+            const title = sanitize(data.article.title ?? null);
+            const description = sanitize(data.article.preview_text ?? null);
+            const imageUrl = sanitize(
+              data.article.cover_media?.media_info?.original_img_url ?? null,
+            );
+            const author = sanitize(data.user?.name ?? data.user?.screen_name ?? null);
+            if (title) {
+              return { title, description, imageUrl, content: null, author, siteName, type: 'article' };
+            }
+          }
 
-          // Use the first media item's thumbnail (photo URL, or video poster)
-          const media = data.mediaDetails?.[0];
-          const imageUrl = sanitize(media?.media_url_https ?? null);
+          // X Articles surface as a non-Tweet __typename — skip to HTML phase
+          if (data.__typename && data.__typename !== 'Tweet') {
+            this.logger.log(`Detected X Article (non-Tweet __typename) for ${tweetId}, falling through to HTML phase`);
+          } else {
+            const title = sanitize(this.cleanTweetText(data.text ?? ''));
+            const author = sanitize(data.user?.name ?? data.user?.screen_name ?? null);
+            const media = data.mediaDetails?.[0];
+            const imageUrl = sanitize(media?.media_url_https ?? null);
 
-          if (title) {
-            return { title, description: null, imageUrl, content: null, author, siteName, type };
+            if (title) {
+              return { title, description: null, imageUrl, content: null, author, siteName, type: 'tweet' };
+            }
           }
         } else {
           this.logger.warn(`Twitter syndication non-ok for ${tweetId}: ${response.status}`);
@@ -324,6 +267,7 @@ export class ScraperService {
 
       // Phase 2: oEmbed fallback — official Twitter endpoint, always works for public tweets.
       // Returns an HTML blockquote whose <p> contains the tweet text.
+      // Skip for articles (oEmbed returns the article URL tweet, not the article content).
       try {
         const oEmbedUrl =
           `https://publish.twitter.com/oembed?url=${encodeURIComponent(twitterUrl)}&omit_script=true`;
@@ -352,7 +296,9 @@ export class ScraperService {
           const title = sanitize(this.extractOEmbedText(data.html ?? ''));
           const author = sanitize(data.author_name ?? null);
 
-          return { title, description: null, imageUrl: null, content: null, author, siteName, type };
+          if (title) {
+            return { title, description: null, imageUrl: null, content: null, author, siteName, type: 'tweet' };
+          }
         } else {
           this.logger.warn(`Twitter oEmbed non-ok for ${tweetId}: ${response.status}`);
         }
@@ -361,7 +307,100 @@ export class ScraperService {
       }
     }
 
-    return this.empty(type);
+    // Phase 3: HTML scraping — handles X Articles and any tweet that slipped through.
+    // X server-side renders og:* tags for articles (title, description, image, type).
+    try {
+      const html = await this.fetchHtml(url);
+      if (html) {
+        const ogType = this.extractMeta(html, 'og:type');
+        const isArticle = ogType === 'article';
+
+        const title =
+          this.extractMeta(html, 'og:title') ||
+          this.extractMeta(html, 'twitter:title') ||
+          this.extractTitle(html);
+
+        const description =
+          this.extractMeta(html, 'og:description') ||
+          this.extractMeta(html, 'twitter:description') ||
+          this.extractMeta(html, 'description');
+
+        const imageUrl =
+          this.extractMeta(html, 'og:image') ||
+          this.extractMeta(html, 'twitter:image');
+
+        // Strip the "Name on X: " prefix that X adds to tweet og:titles
+        const cleanTitle = sanitize(title)
+          ?.replace(/^.+ on X:\s*[""\u201C]/i, '')
+          .replace(/[""\u201D]\s*$/, '')
+          .trim() ?? null;
+
+        const contentType: ContentType = isArticle ? 'article' : 'tweet';
+        this.logger.log(`Twitter HTML phase: og:type=${ogType ?? 'n/a'} → contentType=${contentType}`);
+
+        if (cleanTitle) {
+          return {
+            title: sanitize(cleanTitle),
+            description: sanitize(description),
+            imageUrl: sanitize(imageUrl),
+            content: null,
+            author: null,
+            siteName,
+            type: contentType,
+          };
+        }
+      }
+    } catch (err) {
+      this.logger.warn(`Twitter HTML phase failed for ${url}: ${String(err)}`);
+    }
+
+    return this.empty('tweet');
+  }
+
+  /** Fetches up to 500 KB of HTML from a URL, returning null on failure. */
+  private async fetchHtml(url: string): Promise<string | null> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) return null;
+
+    const reader = response.body?.getReader();
+    if (!reader) return null;
+
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+    const maxBytes = 500_000;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done || !value) break;
+      chunks.push(value);
+      totalBytes += value.byteLength;
+      if (totalBytes >= maxBytes) {
+        await reader.cancel();
+        break;
+      }
+    }
+
+    return new TextDecoder().decode(
+      chunks.reduce((acc, chunk) => {
+        const merged = new Uint8Array(acc.byteLength + chunk.byteLength);
+        merged.set(acc, 0);
+        merged.set(chunk, acc.byteLength);
+        return merged;
+      }, new Uint8Array(0)),
+    );
   }
 
   /**
