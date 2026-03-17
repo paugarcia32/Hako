@@ -1,5 +1,6 @@
 'use client';
 
+import { AddItemsToCollectionPopover } from '@/components/add-items-to-collection-popover';
 import { BottomUrlBar } from '@/components/bottom-url-bar';
 import { FilterBar } from '@/components/filter-bar';
 import type { SortOption, TypeFilter } from '@/components/filter-bar';
@@ -8,9 +9,9 @@ import { ItemRow } from '@/components/item-row';
 import { trpc } from '@/lib/trpc';
 import type { Item } from '@inkbox/types';
 import { COLLECTION_COLORS } from '@inkbox/types';
-import { ArrowLeftIcon, InboxIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, InboxIcon, PlusIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { use, useMemo, useState } from 'react';
+import { use, useMemo, useRef, useState } from 'react';
 
 export default function CollectionDetailPage({
   params,
@@ -20,6 +21,8 @@ export default function CollectionDetailPage({
   const { id } = use(params);
   const [sort, setSort] = useState<SortOption>('date-desc');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [addPopoverOpen, setAddPopoverOpen] = useState(false);
+  const addBtnRef = useRef<HTMLDivElement>(null);
 
   const { data: collection } = trpc.collections.getById.useQuery({ id });
   const { data, isLoading, isError, refetch } = trpc.items.list.useQuery(
@@ -39,6 +42,11 @@ export default function CollectionDetailPage({
   const colorHex = collection
     ? (COLLECTION_COLORS.find((c) => c.id === collection.color)?.hex ?? '#78716c')
     : '#78716c';
+
+  const existingItemIds = useMemo(
+    () => new Set(data?.items.map((i) => i.id) ?? []),
+    [data?.items],
+  );
 
   const items = useMemo(() => {
     let result = data?.items ?? [];
@@ -80,6 +88,26 @@ export default function CollectionDetailPage({
               </span>
             </>
           )}
+
+          {/* Add items button */}
+          <div ref={addBtnRef} className="relative ml-auto">
+            <button
+              type="button"
+              onClick={() => setAddPopoverOpen((v) => !v)}
+              className="flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:border-stone-300 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-400 dark:hover:border-stone-600 dark:hover:bg-stone-800"
+            >
+              <PlusIcon className="size-3.5" />
+              Add items
+            </button>
+
+            {addPopoverOpen && (
+              <AddItemsToCollectionPopover
+                collectionId={id}
+                existingItemIds={existingItemIds}
+                onClose={() => setAddPopoverOpen(false)}
+              />
+            )}
+          </div>
         </div>
 
         <FilterBar
@@ -120,7 +148,7 @@ export default function CollectionDetailPage({
               No items in this collection
             </p>
             <p className="mt-1 text-xs text-stone-400 dark:text-stone-600">
-              Add items using the folder icon on any saved link
+              Use the "Add items" button above or the folder icon on any saved link
             </p>
           </div>
         )}

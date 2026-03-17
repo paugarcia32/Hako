@@ -270,7 +270,7 @@ export function ItemRow({
           {hostname}
         </span>
 
-        {/* Collection badge (All page only) */}
+        {/* Collection badge(s) — All page only */}
         {showCollection && firstCollection && (
           <span className="ml-2 flex shrink-0 items-center gap-1 text-xs text-stone-400 dark:text-stone-500">
             <span
@@ -282,6 +282,29 @@ export function ItemRow({
               }}
             />
             {firstCollection.collectionName}
+            {item.collections && item.collections.length > 1 && (
+              <span className="group/badge relative cursor-default">
+                <span className="rounded bg-stone-200/80 px-1 font-medium dark:bg-stone-700">
+                  +{item.collections.length - 1}
+                </span>
+                {/* Custom tooltip */}
+                <span className="pointer-events-none absolute bottom-full right-0 mb-1.5 hidden group-hover/badge:flex flex-col gap-0.5 rounded-lg border border-stone-200 bg-white px-2.5 py-2 shadow-md dark:border-stone-700 dark:bg-stone-900 z-50 min-w-max">
+                  {item.collections.slice(1).map((c) => (
+                    <span key={c.collectionId} className="flex items-center gap-1.5">
+                      <span
+                        className="size-1.5 shrink-0 rounded-full"
+                        style={{
+                          background:
+                            COLLECTION_COLORS.find((col) => col.id === c.collectionColor)?.hex ??
+                            '#78716c',
+                        }}
+                      />
+                      <span className="text-xs text-stone-600 dark:text-stone-300">{c.collectionName}</span>
+                    </span>
+                  ))}
+                </span>
+              </span>
+            )}
           </span>
         )}
       </div>

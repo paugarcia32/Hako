@@ -48,11 +48,17 @@ function buildGroups(items: Item[], groupBy: GroupBy): Group[] {
   if (groupBy === 'collection') {
     const map = new Map<string, { label: string; items: Item[] }>();
     for (const item of items) {
-      const col = item.collections?.[0];
-      const key = col ? col.collectionId : '__none__';
-      const label = col ? col.collectionName : 'No collection';
-      if (!map.has(key)) map.set(key, { label, items: [] });
-      map.get(key)!.items.push(item);
+      const cols = item.collections;
+      if (!cols || cols.length === 0) {
+        if (!map.has('__none__')) map.set('__none__', { label: 'No collection', items: [] });
+        map.get('__none__')!.items.push(item);
+      } else {
+        // Appear in every collection the item belongs to
+        for (const col of cols) {
+          if (!map.has(col.collectionId)) map.set(col.collectionId, { label: col.collectionName, items: [] });
+          map.get(col.collectionId)!.items.push(item);
+        }
+      }
     }
     const groups: Group[] = [];
     for (const [key, { label, items: groupItems }] of map) {
