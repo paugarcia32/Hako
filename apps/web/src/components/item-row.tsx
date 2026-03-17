@@ -287,40 +287,58 @@ export function ItemRow({
 
         {/* Collection badge(s) — All page only */}
         {showCollection && firstCollection && (() => {
-          const firstHex = COLLECTION_COLORS.find((c) => c.id === firstCollection.collectionColor)?.hex ?? '#78716c';
+          const cols = item.collections ?? [firstCollection];
+          const isMulti = cols.length > 1;
+
+          if (isMulti) {
+            // Multiple collections: show only colored dots/icons for all of them.
+            // Count speaks for itself; names appear in the tooltip on hover.
+            return (
+              <span className="group/badge relative ml-2 flex shrink-0 cursor-default items-center gap-1">
+                {cols.slice(0, 5).map((c) => {
+                  const hex = COLLECTION_COLORS.find((col) => col.id === c.collectionColor)?.hex ?? '#78716c';
+                  const ColIcon = getCollectionIcon(c.collectionIcon);
+                  return ColIcon ? (
+                    <ColIcon key={c.collectionId} className="size-3 shrink-0" style={{ color: hex }} />
+                  ) : (
+                    <span key={c.collectionId} className="block size-1.5 shrink-0 rounded-full" style={{ background: hex }} />
+                  );
+                })}
+                {cols.length > 5 && (
+                  <span className="text-[10px] text-stone-300 dark:text-stone-600">+{cols.length - 5}</span>
+                )}
+                {/* Tooltip: full list of collection names */}
+                <span className="pointer-events-none absolute bottom-full right-0 z-50 mb-1.5 hidden min-w-max flex-col gap-0.5 rounded-lg border border-stone-200 bg-white px-2.5 py-2 shadow-md group-hover/badge:flex dark:border-stone-700 dark:bg-stone-900">
+                  {cols.map((c) => {
+                    const hex = COLLECTION_COLORS.find((col) => col.id === c.collectionColor)?.hex ?? '#78716c';
+                    const ColIcon = getCollectionIcon(c.collectionIcon);
+                    return (
+                      <span key={c.collectionId} className="flex items-center gap-1.5">
+                        {ColIcon ? (
+                          <ColIcon className="size-3 shrink-0" style={{ color: hex }} />
+                        ) : (
+                          <span className="size-1.5 shrink-0 rounded-full" style={{ background: hex }} />
+                        )}
+                        <span className="text-xs text-stone-600 dark:text-stone-300">{c.collectionName}</span>
+                      </span>
+                    );
+                  })}
+                </span>
+              </span>
+            );
+          }
+
+          // Single collection: dot/icon + name
+          const hex = COLLECTION_COLORS.find((c) => c.id === firstCollection.collectionColor)?.hex ?? '#78716c';
           const FirstIcon = getCollectionIcon(firstCollection.collectionIcon);
           return (
             <span className="ml-2 flex shrink-0 items-center gap-1 text-xs text-stone-400 dark:text-stone-500">
               {FirstIcon ? (
-                <FirstIcon className="size-3 shrink-0" style={{ color: firstHex }} />
+                <FirstIcon className="size-3 shrink-0" style={{ color: hex }} />
               ) : (
-                <span className="size-1.5 shrink-0 rounded-full" style={{ background: firstHex }} />
+                <span className="size-1.5 shrink-0 rounded-full" style={{ background: hex }} />
               )}
               {firstCollection.collectionName}
-              {item.collections && item.collections.length > 1 && (
-                <span className="group/badge relative cursor-default">
-                  <span className="rounded bg-stone-200/80 px-1 font-medium dark:bg-stone-700">
-                    +{item.collections.length - 1}
-                  </span>
-                  {/* Custom tooltip */}
-                  <span className="pointer-events-none absolute bottom-full right-0 mb-1.5 hidden group-hover/badge:flex flex-col gap-0.5 rounded-lg border border-stone-200 bg-white px-2.5 py-2 shadow-md dark:border-stone-700 dark:bg-stone-900 z-50 min-w-max">
-                    {item.collections.slice(1).map((c) => {
-                      const hex = COLLECTION_COLORS.find((col) => col.id === c.collectionColor)?.hex ?? '#78716c';
-                      const ExtraIcon = getCollectionIcon(c.collectionIcon);
-                      return (
-                        <span key={c.collectionId} className="flex items-center gap-1.5">
-                          {ExtraIcon ? (
-                            <ExtraIcon className="size-3 shrink-0" style={{ color: hex }} />
-                          ) : (
-                            <span className="size-1.5 shrink-0 rounded-full" style={{ background: hex }} />
-                          )}
-                          <span className="text-xs text-stone-600 dark:text-stone-300">{c.collectionName}</span>
-                        </span>
-                      );
-                    })}
-                  </span>
-                </span>
-              )}
             </span>
           );
         })()}
