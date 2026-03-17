@@ -116,8 +116,13 @@ export function ItemRow({
     onHoverChange(item.id);
     if (rowRef.current) {
       const rect = rowRef.current.getBoundingClientRect();
-      const cardWidth = 224; // w-56
-      const top = rect.top + rect.height / 2;
+      const cardWidth = 224;  // w-56
+      const cardHeight = 300; // safe max estimate
+      const rawTop = rect.top + rect.height / 2;
+      const top = Math.max(
+        cardHeight / 2 + 8,
+        Math.min(rawTop, window.innerHeight - cardHeight / 2 - 8),
+      );
       const left = Math.min(rect.right + 16, window.innerWidth - cardWidth - 8);
       setCardPos({ top, left });
     }
