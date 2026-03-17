@@ -116,7 +116,10 @@ export function ItemRow({
     onHoverChange(item.id);
     if (rowRef.current) {
       const rect = rowRef.current.getBoundingClientRect();
-      setCardPos({ top: rect.top + rect.height / 2, left: rect.right + 16 });
+      const cardWidth = 224; // w-56
+      const top = rect.top + rect.height / 2;
+      const left = Math.min(rect.right + 16, window.innerWidth - cardWidth - 8);
+      setCardPos({ top, left });
     }
   }
 
@@ -133,8 +136,8 @@ export function ItemRow({
       className={[
         'relative flex h-10 items-center gap-3 rounded-lg px-2',
         'transition-all duration-200 ease-out',
-        isDimmed ? 'opacity-40 scale-y-[0.97]' : 'opacity-100 scale-y-100',
-        isHovered ? 'translate-x-0.5 bg-stone-100/70 dark:bg-stone-800/60' : '',
+        isDimmed ? 'opacity-40 scale-y-[0.97]' : 'opacity-100',
+        isHovered ? 'bg-stone-100/70 dark:bg-stone-800/60' : '',
       ].join(' ')}
     >
       {/* Full-row click target — sits behind all interactive children */}
@@ -145,7 +148,11 @@ export function ItemRow({
         className="absolute inset-0 cursor-pointer rounded-lg"
       />
 
-      <div className="relative flex h-10 w-full items-center gap-3">
+      <div className={[
+          'relative flex h-10 w-full items-center gap-3',
+          'transition-transform duration-200 ease-out',
+          isHovered ? 'translate-x-0.5' : '',
+        ].join(' ')}>
         {/* Hover action icons — visible only when this row is hovered */}
         <div
           className={[
