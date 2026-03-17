@@ -21,6 +21,7 @@ export default function CollectionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const [showArchived, setShowArchived] = useState(false);
   const [sort, setSort] = useState<SortOption>('date-desc');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [addPopoverOpen, setAddPopoverOpen] = useState(false);
@@ -28,7 +29,7 @@ export default function CollectionDetailPage({
 
   const { data: collection } = trpc.collections.getById.useQuery({ id });
   const { data, isLoading, isFetching, isError, refetch } = trpc.items.list.useQuery(
-    { collectionId: id },
+    { collectionId: id, includeArchived: showArchived || undefined },
     {
       placeholderData: (prev) => prev,
       refetchInterval: (query) =>
@@ -122,6 +123,8 @@ export default function CollectionDetailPage({
           onSortChange={setSort}
           typeFilter={typeFilter}
           onTypeFilterChange={setTypeFilter}
+          showArchived={showArchived}
+          onToggleArchived={() => setShowArchived((v) => !v)}
         />
 
         {isError ? (
@@ -154,6 +157,7 @@ export default function CollectionDetailPage({
                   key={item.id}
                   item={item}
                   showCollection={false}
+                  showArchivedBadge={showArchived}
                   onOpen={setSelectedItem}
                   hoveredId={hoveredId}
                   onHoverChange={setHoveredId}

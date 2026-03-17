@@ -270,14 +270,9 @@ export function ItemRow({
           </span>
         </a>
 
-        {/* Domain */}
-        <span className="ml-3 shrink-0 text-xs text-stone-400 dark:text-stone-500">
-          {hostname}
-        </span>
-
         {/* Archived indicator — only when "show archived" filter is active */}
         {showArchivedBadge && item.isArchived && (
-          <span className="group/archived relative ml-1 shrink-0">
+          <span className="group/archived relative ml-2 shrink-0">
             <ArchiveBoxIcon className="size-3 text-stone-300 dark:text-stone-600" />
             <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-stone-200 bg-white px-1.5 py-0.5 text-[11px] text-stone-500 shadow-sm group-hover/archived:block dark:border-stone-700 dark:bg-stone-900 dark:text-stone-400">
               Archived
@@ -342,6 +337,11 @@ export function ItemRow({
             </span>
           );
         })()}
+
+        {/* Domain */}
+        <span className="ml-3 shrink-0 text-xs text-stone-400 dark:text-stone-500">
+          {hostname}
+        </span>
       </div>
 
       {/* Hover card — portalled into body so CSS transforms on ancestors

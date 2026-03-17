@@ -71,8 +71,8 @@ export class ItemsService {
       ...(inboxOnly ? { isArchived: false, collections: { none: {} } } : {}),
       // Archive page: only archived
       ...(archivedOnly ? { isArchived: true } : {}),
-      // Default (All page, no special flag): hide archived unless explicitly requested
-      ...(!inboxOnly && !archivedOnly && !includeArchived && !collectionId ? { isArchived: false } : {}),
+      // Default: hide archived unless explicitly requested (applies to All page AND collection pages)
+      ...(!inboxOnly && !archivedOnly && !includeArchived ? { isArchived: false } : {}),
     };
 
     const items = await this.prisma.item.findMany({
