@@ -7,6 +7,7 @@ import type { Item } from '@inkbox/types';
 import { COLLECTION_COLORS } from '@inkbox/types';
 import { ArchiveBoxArrowDownIcon, ArchiveBoxIcon, FolderPlusIcon, GlobeAltIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 function getFaviconUrl(url: string): string | null {
   try {
@@ -312,10 +313,15 @@ export function ItemRow({
         })()}
       </div>
 
-      {/* Hover card — fixed, pointer-events: none */}
-      {isHovered && cardPos && (
-        <ItemHoverCard item={item} top={cardPos.top} left={cardPos.left} />
-      )}
+      {/* Hover card — portalled into body so CSS transforms on ancestors
+          don't break the fixed positioning (any transform creates a new
+          containing block for position:fixed, including translateY(0)). */}
+      {isHovered && cardPos &&
+        createPortal(
+          <ItemHoverCard item={item} top={cardPos.top} left={cardPos.left} />,
+          document.body,
+        )
+      }
     </li>
   );
 }
