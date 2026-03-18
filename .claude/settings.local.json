@@ -52,7 +52,18 @@
       "Bash(pnpm test:*)",
       "Bash(npx nx:*)",
       "Bash(pnpm biome:*)",
-      "Bash(find /c/Users/Pau/dev/inkbox -type f -name *youtube* -o -name *you*)"
+      "Bash(find /c/Users/Pau/dev/inkbox -type f -name *youtube* -o -name *you*)",
+      "WebFetch(domain:dribbble.com)",
+      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://dribbble.com/shots/25614963-Duwy-Personal-Portfolio-Website\")",
+      "Bash(curl -s \"https://dribbble.com/oembed?url=https://dribbble.com/shots/25614963-Duwy-Personal-Portfolio-Website\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\)\")",
+      "WebSearch",
+      "Bash(pnpm prisma:*)",
+      "Bash(pnpm db:push)",
+      "Bash(curl -s -o /dev/null -w \"status: %{http_code}\\\\nsize: %{size_download}\\\\n\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36\" -H \"Accept: text/html,application/xhtml+xml\" -H \"Accept-Language: en-US,en;q=0.9\" \"https://dribbble.com/shots/25614963-Duwy-Personal-Portfolio-Website\")",
+      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36\" -H \"Accept: text/html,application/xhtml+xml\" -H \"Accept-Language: en-US,en;q=0.9\" \"https://dribbble.com/shots/25614963-Duwy-Personal-Portfolio-Website\")",
+      "Bash(curl -s -o /dev/null -w \"status: %{http_code}\\\\nsize: %{size_download}\\\\n\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36\" -H \"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8\" -H \"Accept-Language: en-US,en;q=0.9\" -H \"Accept-Encoding: gzip, deflate, br\" -H \"sec-ch-ua: \"\"Chromium\"\";v=\"\"124\"\", \"\"Google Chrome\"\";v=\"\"124\"\", \"\"Not-A.Brand\"\";v=\"\"99\"\"\" -H \"sec-ch-ua-mobile: ?0\" -H \"sec-ch-ua-platform: \"\"Windows\"\"\" -H \"sec-fetch-dest: document\" -H \"sec-fetch-mode: navigate\" -H \"sec-fetch-site: none\" -H \"sec-fetch-user: ?1\" -H \"upgrade-insecure-requests: 1\" \"https://dribbble.com/shots/25614963-Duwy-Personal-Portfolio-Website\")",
+      "Bash(curl -s -o /dev/null -w \"status: %{http_code}\\\\nsize: %{size_download}\\\\n\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36\" -H \"Accept: application/json\" \"https://dribbble.com/shots/25614963.json\")",
+      "Bash(curl -s -o /dev/null -w \"status: %{http_code}\\\\nsize: %{size_download}\\\\n\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36\" -H \"Accept: application/json\" \"https://api.dribbble.com/v2/shots/25614963\")"
     ]
   }
 }
