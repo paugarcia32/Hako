@@ -1,8 +1,0 @@
-{
-  "extends": "@hako/config/nextjs",
-  "compilerOptions": {
-    "jsx": "react-jsx"
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
-}

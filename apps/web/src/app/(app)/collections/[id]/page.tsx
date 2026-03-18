@@ -3,10 +3,10 @@
 import { AddItemsToCollectionPopover } from '@/components/add-items-to-collection-popover';
 import { BottomUrlBar } from '@/components/bottom-url-bar';
 import { FilterBar } from '@/components/filter-bar';
-import type { SortOption, TypeFilter } from '@/components/filter-bar';
 import { ItemDetailPanel } from '@/components/item-detail-panel';
 import { ItemRow } from '@/components/item-row';
 import { ItemsSection } from '@/components/items-section';
+import { useItemFiltering } from '@/hooks/use-item-filtering';
 import { getCollectionIcon } from '@/lib/collection-icons';
 import { trpc } from '@/lib/trpc';
 import { ArrowLeftIcon, InboxIcon, PlusIcon } from '@heroicons/react/24/outline';
@@ -22,8 +22,6 @@ export default function CollectionDetailPage({
 }) {
   const { id } = use(params);
   const [showArchived, setShowArchived] = useState(false);
-  const [sort, setSort] = useState<SortOption>('date-desc');
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [addPopoverOpen, setAddPopoverOpen] = useState(false);
   const addBtnRef = useRef<HTMLDivElement>(null);
 
@@ -49,21 +47,9 @@ export default function CollectionDetailPage({
 
   const existingItemIds = useMemo(() => new Set(data?.items.map((i) => i.id) ?? []), [data?.items]);
 
-  const items = useMemo(() => {
-    let result = data?.items ?? [];
-    if (typeFilter !== 'all') {
-      result = result.filter((item) => item.type === typeFilter);
-    }
-    return [...result].sort((a, b) => {
-      if (sort === 'date-desc')
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sort === 'date-asc')
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      const ta = (a.title?.trim() || a.url).toLowerCase();
-      const tb = (b.title?.trim() || b.url).toLowerCase();
-      return sort === 'alpha-asc' ? ta.localeCompare(tb) : tb.localeCompare(ta);
-    });
-  }, [data?.items, sort, typeFilter]);
+  const { sort, setSort, typeFilter, setTypeFilter, filtered: items } = useItemFiltering(
+    data?.items ?? [],
+  );
 
   return (
     <>

@@ -1,8 +1,8 @@
 'use client';
 
 import { AddToCollectionPopover } from '@/components/add-to-collection-popover';
+import { useItemActions } from '@/hooks/use-item-actions';
 import { getCollectionIcon } from '@/lib/collection-icons';
-import { trpc } from '@/lib/trpc';
 import {
   ArchiveBoxArrowDownIcon,
   ArchiveBoxIcon,
@@ -12,25 +12,9 @@ import {
 } from '@heroicons/react/24/outline';
 import type { Item } from '@hako/types';
 import { COLLECTION_COLORS } from '@hako/types';
+import { getFaviconUrl, getHostname } from '@hako/utils';
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-
-function getFaviconUrl(url: string): string | null {
-  try {
-    const { hostname } = new URL(url);
-    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
-  } catch {
-    return null;
-  }
-}
-
-function getHostname(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return url;
-  }
-}
 
 interface HoverCardProps {
   item: Item;
@@ -102,23 +86,11 @@ export function ItemRow({
   hoveredId,
   onHoverChange,
 }: ItemRowProps) {
-  const utils = trpc.useUtils();
+  const { archive, unarchive, deleteItem } = useItemActions();
   const [faviconError, setFaviconError] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [cardPos, setCardPos] = useState<{ top: number; left: number } | null>(null);
   const rowRef = useRef<HTMLLIElement>(null);
-
-  const archive = trpc.items.archive.useMutation({
-    onSuccess: () => void utils.items.list.invalidate(),
-  });
-
-  const unarchive = trpc.items.unarchive.useMutation({
-    onSuccess: () => void utils.items.list.invalidate(),
-  });
-
-  const deleteItem = trpc.items.delete.useMutation({
-    onSuccess: () => void utils.items.list.invalidate(),
-  });
 
   const favicon = getFaviconUrl(item.url);
   const hostname = getHostname(item.url);

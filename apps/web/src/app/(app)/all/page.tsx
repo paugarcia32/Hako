@@ -2,90 +2,20 @@
 
 import { BottomUrlBar } from '@/components/bottom-url-bar';
 import { FilterBar } from '@/components/filter-bar';
-import type { GroupBy, SortOption, TypeFilter } from '@/components/filter-bar';
 import { ItemDetailPanel } from '@/components/item-detail-panel';
 import { ItemRow } from '@/components/item-row';
 import { ItemsSection } from '@/components/items-section';
+import { useItemFiltering } from '@/hooks/use-item-filtering';
+import { useItemGrouping } from '@/hooks/use-item-grouping';
+import { buildGroups } from '@/lib/grouping-utils';
 import { trpc } from '@/lib/trpc';
 import { ChevronRightIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
 import type { Item } from '@hako/types';
 import { useMemo, useState } from 'react';
 
-type Group = { key: string; label: string; items: Item[] };
-
-function getDateBucket(dateStr: string): string {
-  const itemDate = new Date(dateStr);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today.getTime() - 86_400_000);
-  const weekStart = new Date(today.getTime() - today.getDay() * 86_400_000);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const itemDay = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
-
-  if (itemDay >= today) return 'Today';
-  if (itemDay >= yesterday) return 'Yesterday';
-  if (itemDay >= weekStart) return 'This week';
-  if (itemDay >= monthStart) return 'This month';
-  return 'Older';
-}
-
-const DATE_BUCKET_ORDER = ['Today', 'Yesterday', 'This week', 'This month', 'Older'];
-
-function buildGroups(items: Item[], groupBy: GroupBy): Group[] {
-  if (groupBy === 'date') {
-    const map = new Map<string, Item[]>();
-    for (const item of items) {
-      const bucket = getDateBucket(item.createdAt);
-      if (!map.has(bucket)) map.set(bucket, []);
-      map.get(bucket)?.push(item);
-    }
-    return DATE_BUCKET_ORDER.filter((b) => map.has(b)).map((b) => ({
-      key: b,
-      label: b,
-      items: map.get(b) ?? [],
-    }));
-  }
-
-  if (groupBy === 'collection') {
-    const map = new Map<string, { label: string; items: Item[] }>();
-    for (const item of items) {
-      const cols = item.collections;
-      if (!cols || cols.length === 0) {
-        if (!map.has('__none__')) map.set('__none__', { label: 'No collection', items: [] });
-        map.get('__none__')?.items.push(item);
-      } else {
-        // Appear in every collection the item belongs to
-        for (const col of cols) {
-          if (!map.has(col.collectionId))
-            map.set(col.collectionId, { label: col.collectionName, items: [] });
-          map.get(col.collectionId)?.items.push(item);
-        }
-      }
-    }
-    const groups: Group[] = [];
-    for (const [key, { label, items: groupItems }] of map) {
-      if (key !== '__none__') groups.push({ key, label, items: groupItems });
-    }
-    groups.sort((a, b) => a.label.localeCompare(b.label));
-    if (map.has('__none__')) {
-      groups.push({
-        key: '__none__',
-        label: 'No collection',
-        items: map.get('__none__')?.items ?? [],
-      });
-    }
-    return groups;
-  }
-
-  return [];
-}
-
 export default function AllPage() {
   const [showArchived, setShowArchived] = useState(false);
-  const [sort, setSort] = useState<SortOption>('date-desc');
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
-  const [groupBy, setGroupBy] = useState<GroupBy>('none');
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const { groupBy, setGroupBy, collapsedGroups, toggleGroup } = useItemGrouping();
 
   const { data, isLoading, isFetching, isError, refetch } = trpc.items.list.useQuery(
     { includeArchived: showArchived || undefined },
@@ -102,40 +32,14 @@ export default function AllPage() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const items = useMemo(() => {
-    let result = data?.items ?? [];
-    if (typeFilter !== 'all') {
-      result = result.filter((item) => item.type === typeFilter);
-    }
-    return [...result].sort((a, b) => {
-      if (sort === 'date-desc')
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sort === 'date-asc')
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      const ta = (a.title?.trim() || a.url).toLowerCase();
-      const tb = (b.title?.trim() || b.url).toLowerCase();
-      return sort === 'alpha-asc' ? ta.localeCompare(tb) : tb.localeCompare(ta);
-    });
-  }, [data?.items, sort, typeFilter]);
+  const { sort, setSort, typeFilter, setTypeFilter, filtered: items } = useItemFiltering(
+    data?.items ?? [],
+  );
 
   const groups = useMemo(
     () => (groupBy !== 'none' ? buildGroups(items, groupBy) : null),
     [items, groupBy],
   );
-
-  function toggleGroup(key: string) {
-    setCollapsedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }
-
-  function handleGroupByChange(v: GroupBy) {
-    setGroupBy(v);
-    setCollapsedGroups(new Set());
-  }
 
   return (
     <>
@@ -146,7 +50,7 @@ export default function AllPage() {
           typeFilter={typeFilter}
           onTypeFilterChange={setTypeFilter}
           groupBy={groupBy}
-          onGroupByChange={handleGroupByChange}
+          onGroupByChange={setGroupBy}
           showArchived={showArchived}
           onToggleArchived={() => setShowArchived((v) => !v)}
         />

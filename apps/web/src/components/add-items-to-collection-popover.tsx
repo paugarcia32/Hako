@@ -3,20 +3,13 @@
 import { useClickOutside } from '@/lib/use-click-outside';
 import { trpc } from '@/lib/trpc';
 import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { getHostname } from '@hako/utils';
 import { useMemo, useRef, useState } from 'react';
 
 interface Props {
   collectionId: string;
   existingItemIds: Set<string>;
   onClose: () => void;
-}
-
-function getHostname(url: string) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return url;
-  }
 }
 
 export function AddItemsToCollectionPopover({ collectionId, existingItemIds, onClose }: Props) {

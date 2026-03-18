@@ -1,5 +1,5 @@
 {
-  "name": "@hako/ui",
+  "name": "@hako/utils",
   "version": "0.0.1",
   "private": true,
   "main": "./src/index.ts",
@@ -7,13 +7,8 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "peerDependencies": {
-    "react": "^19.0.0",
-    "tailwindcss": "^4.0.0"
-  },
   "devDependencies": {
     "@hako/config": "workspace:*",
-    "@types/react": "^19.0.0",
     "typescript": "^5.5.0"
   }
 }

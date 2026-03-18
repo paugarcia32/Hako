@@ -11,7 +11,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@hako/types": "workspace:*",
-    "@hako/ui": "workspace:*",
+    "@hako/utils": "workspace:*",
     "@tailwindcss/postcss": "^4.2.1",
     "@tanstack/react-query": "^5.0.0",
     "@trpc/client": "^11.0.0",
