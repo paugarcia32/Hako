@@ -5,12 +5,14 @@ import { ScraperService } from './scraper.service';
 import { GenericScraperService } from './strategies/generic.scraper';
 import { PinterestScraperService } from './strategies/pinterest.scraper';
 import { TwitterScraperService } from './strategies/twitter.scraper';
+import { YoutubeScraperService } from './strategies/youtube.scraper';
 
 @Module({
   providers: [
     ScraperUtilsService,
     TwitterScraperService,
     PinterestScraperService,
+    YoutubeScraperService,
     GenericScraperService,
     {
       provide: SCRAPER_STRATEGIES,
@@ -18,9 +20,15 @@ import { TwitterScraperService } from './strategies/twitter.scraper';
       useFactory: (
         twitter: TwitterScraperService,
         pinterest: PinterestScraperService,
+        youtube: YoutubeScraperService,
         generic: GenericScraperService,
-      ) => [twitter, pinterest, generic],
-      inject: [TwitterScraperService, PinterestScraperService, GenericScraperService],
+      ) => [twitter, pinterest, youtube, generic],
+      inject: [
+        TwitterScraperService,
+        PinterestScraperService,
+        YoutubeScraperService,
+        GenericScraperService,
+      ],
     },
     ScraperService,
   ],

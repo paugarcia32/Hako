@@ -51,7 +51,8 @@
       "Bash(find C:UsersPaudevinkbox -name .env* -o -name *.env*)",
       "Bash(pnpm test:*)",
       "Bash(npx nx:*)",
-      "Bash(pnpm biome:*)"
+      "Bash(pnpm biome:*)",
+      "Bash(find /c/Users/Pau/dev/inkbox -type f -name *youtube* -o -name *you*)"
     ]
   }
 }
