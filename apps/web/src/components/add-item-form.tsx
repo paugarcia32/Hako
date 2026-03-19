@@ -11,6 +11,7 @@ export function AddItemForm() {
     onSuccess: () => {
       setUrl('');
       void utils.items.list.invalidate();
+      void utils.items.count.refetch();
     },
   });
 

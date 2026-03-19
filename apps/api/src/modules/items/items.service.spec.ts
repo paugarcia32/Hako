@@ -315,6 +315,41 @@ describe('ItemsService', () => {
     });
   });
 
+  describe('countInbox', () => {
+    it('returns 0 when user has no items', async () => {
+      const user = await createTestUser();
+      const result = await service.countInbox(user.id);
+      expect(result.inbox).toBe(0);
+    });
+
+    it('counts only non-archived items with no collection', async () => {
+      const user = await createTestUser();
+      const collection = await createTestCollection(user.id);
+
+      // inbox item (should count)
+      await createTestItem(user.id);
+      // archived item (should not count)
+      await createTestItem(user.id, { isArchived: true });
+      // item in collection (should not count)
+      const collectionItem = await createTestItem(user.id);
+      await prisma.collectionItem.create({
+        data: { itemId: collectionItem.id, collectionId: collection.id },
+      });
+
+      const result = await service.countInbox(user.id);
+      expect(result.inbox).toBe(1);
+    });
+
+    it('does not count items from other users', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      await createTestItem(user2.id);
+
+      const result = await service.countInbox(user1.id);
+      expect(result.inbox).toBe(0);
+    });
+  });
+
   describe('delete', () => {
     it('removes item from the database', async () => {
       const user = await createTestUser();

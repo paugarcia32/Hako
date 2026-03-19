@@ -28,6 +28,7 @@ export function BottomUrlBar({
       setUrl('');
       setToast('saved');
       void utils.items.list.invalidate();
+      void utils.items.count.refetch();
       // Also refresh the specific collection's item list if we saved into one
       if (collectionId) {
         void utils.collections.getById.invalidate({ id: collectionId });

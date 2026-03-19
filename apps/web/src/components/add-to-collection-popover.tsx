@@ -22,6 +22,7 @@ export function AddToCollectionPopover({ item, onClose }: AddToCollectionPopover
   const addItem = trpc.collections.addItem.useMutation({
     onSuccess: () => {
       void utils.items.list.invalidate();
+      void utils.items.count.refetch();
       onClose();
     },
   });
@@ -29,6 +30,7 @@ export function AddToCollectionPopover({ item, onClose }: AddToCollectionPopover
   const removeItem = trpc.collections.removeItem.useMutation({
     onSuccess: () => {
       void utils.items.list.invalidate();
+      void utils.items.count.refetch();
       onClose();
     },
   });

@@ -22,6 +22,7 @@ export function AddItemsToCollectionPopover({ collectionId, existingItemIds, onC
   const addItem = trpc.collections.addItem.useMutation({
     onSuccess: () => {
       void utils.items.list.invalidate();
+      void utils.items.count.refetch();
       void utils.collections.getById.invalidate({ id: collectionId });
     },
   });

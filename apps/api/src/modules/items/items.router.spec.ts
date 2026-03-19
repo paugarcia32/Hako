@@ -311,6 +311,44 @@ describe('items tRPC router', () => {
     });
   });
 
+  describe('items.count', () => {
+    it('rejects unauthenticated caller with UNAUTHORIZED', async () => {
+      const caller = await getCaller();
+      await expect(caller.items.count()).rejects.toMatchObject({
+        code: 'UNAUTHORIZED',
+      });
+    });
+
+    it('returns inbox count for authenticated user', async () => {
+      const user = await createTestUser();
+      await createTestItem(user.id);
+      await createTestItem(user.id);
+      const caller = await getCaller(user.id);
+
+      const result = await caller.items.count();
+
+      expect(result.inbox).toBe(2);
+    });
+
+    it('excludes archived and collected items from inbox count', async () => {
+      const user = await createTestUser();
+      const collection = await createTestCollection(user.id);
+      const caller = await getCaller(user.id);
+
+      // inbox item
+      await caller.items.create({ url: 'https://example.com/1' });
+      // item in collection
+      await caller.items.create({ url: 'https://example.com/2', collectionId: collection.id });
+      // archived item
+      const toArchive = await caller.items.create({ url: 'https://example.com/3' });
+      await caller.items.archive({ id: toArchive.id });
+
+      const result = await caller.items.count();
+
+      expect(result.inbox).toBe(1);
+    });
+  });
+
   describe('items.delete', () => {
     it('deletes the item, which no longer appears in list', async () => {
       const user = await createTestUser();

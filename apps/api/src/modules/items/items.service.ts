@@ -131,4 +131,11 @@ export class ItemsService {
   async delete(userId: string, id: string) {
     return this.prisma.item.delete({ where: { id, userId } });
   }
+
+  async countInbox(userId: string) {
+    const count = await this.prisma.item.count({
+      where: { userId, isArchived: false, collections: { none: {} } },
+    });
+    return { inbox: count };
+  }
 }

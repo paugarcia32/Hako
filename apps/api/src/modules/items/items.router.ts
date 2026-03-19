@@ -46,6 +46,9 @@ export class ItemsRouter {
       delete: this.trpc.protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(({ ctx, input }) => this.items.delete(ctx.userId, input.id)),
+
+      count: this.trpc.protectedProcedure
+        .query(({ ctx }) => this.items.countInbox(ctx.userId)),
     });
   }
 }
