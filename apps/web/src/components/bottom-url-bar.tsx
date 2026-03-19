@@ -133,17 +133,24 @@ export function BottomUrlBar({
     return;
   }, [toast]);
 
-  // Cmd+K / Ctrl+K global shortcut
+  // Cmd+K / Ctrl+K global shortcut + '/' via custom event
   useEffect(() => {
+    function openSearch() {
+      inputRef.current?.focus();
+      setIsOpen(true);
+    }
     function onKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        inputRef.current?.focus();
-        setIsOpen(true);
+        openSearch();
       }
     }
     document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    document.addEventListener('focus-search-bar', openSearch);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('focus-search-bar', openSearch);
+    };
   }, []);
 
   // Close panel on outside click

@@ -2,6 +2,7 @@
 
 import { AddToCollectionPopover } from '@/components/add-to-collection-popover';
 import { EditItemModal } from '@/components/edit-item-modal';
+import { useKeyboardNav } from '@/contexts/keyboard-nav';
 import { useItemActions } from '@/hooks/use-item-actions';
 import { getCollectionIcon } from '@/lib/collection-icons';
 import type { Item } from '@hako/types';
@@ -87,6 +88,7 @@ export function ItemRow({
   onHoverChange,
 }: ItemRowProps) {
   const { archive, unarchive, deleteItem } = useItemActions();
+  const { selectedItemId } = useKeyboardNav();
   const [faviconError, setFaviconError] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -98,7 +100,8 @@ export function ItemRow({
   const firstCollection = item.collections?.[0];
 
   const isHovered = hoveredId === item.id;
-  const isActive = isHovered || popoverOpen || editOpen;
+  const isKeyboardSelected = selectedItemId === item.id;
+  const isActive = isHovered || popoverOpen || editOpen || isKeyboardSelected;
   const isDimmed = hoveredId !== null && !isHovered && !popoverOpen;
 
   function handleMouseEnter() {
@@ -126,6 +129,7 @@ export function ItemRow({
   return (
     <li
       ref={rowRef}
+      data-item-id={item.id}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={[
@@ -134,6 +138,7 @@ export function ItemRow({
         popoverOpen ? 'z-20' : '',
         isDimmed ? 'opacity-40 scale-y-[0.97]' : 'opacity-100',
         isActive ? 'bg-stone-100/70 dark:bg-stone-800/60' : '',
+        isKeyboardSelected ? 'ring-1 ring-inset ring-stone-400/40 dark:ring-stone-500/40' : '',
       ].join(' ')}
     >
       {/* Full-row click target — opens the saved URL. aria-label provides accessible content. */}

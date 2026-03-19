@@ -2,7 +2,7 @@
 
 import { useClickOutside } from '@/lib/use-click-outside';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export type SortOption = 'date-desc' | 'date-asc' | 'alpha-asc' | 'alpha-desc';
 export type TypeFilter = 'all' | 'link' | 'article' | 'video' | 'image' | 'post';
@@ -29,13 +29,29 @@ interface DropdownProps<T extends string> {
   onChange: (v: T) => void;
   options: { value: T; label: string }[];
   label: string;
+  externalOpen?: boolean;
+  onExternalOpened?: (() => void) | undefined;
 }
 
-function Dropdown<T extends string>({ value, onChange, options, label }: DropdownProps<T>) {
+function Dropdown<T extends string>({
+  value,
+  onChange,
+  options,
+  label,
+  externalOpen,
+  onExternalOpened,
+}: DropdownProps<T>) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useClickOutside(ref, () => setOpen(false), open);
+
+  useEffect(() => {
+    if (externalOpen) {
+      setOpen(true);
+      onExternalOpened?.();
+    }
+  }, [externalOpen, onExternalOpened]);
 
   return (
     <div ref={ref} className="relative">
@@ -120,6 +136,8 @@ interface FilterBarProps {
   onGroupByChange?: (v: GroupBy) => void;
   showArchived?: boolean;
   onToggleArchived?: () => void;
+  pendingFilterOpen?: 'sort' | 'type' | 'group' | null;
+  onFilterOpened?: () => void;
 }
 
 export function FilterBar({
@@ -131,15 +149,26 @@ export function FilterBar({
   onGroupByChange,
   showArchived,
   onToggleArchived,
+  pendingFilterOpen,
+  onFilterOpened,
 }: FilterBarProps) {
   return (
     <div className="mb-3 flex h-9 items-center gap-1">
-      <Dropdown value={sort} onChange={onSortChange} options={SORT_OPTIONS} label="Sort" />
+      <Dropdown
+        value={sort}
+        onChange={onSortChange}
+        options={SORT_OPTIONS}
+        label="Sort"
+        externalOpen={pendingFilterOpen === 'sort'}
+        onExternalOpened={onFilterOpened}
+      />
       <Dropdown
         value={typeFilter}
         onChange={onTypeFilterChange}
         options={TYPE_OPTIONS}
         label="Type"
+        externalOpen={pendingFilterOpen === 'type'}
+        onExternalOpened={onFilterOpened}
       />
       {groupBy !== undefined && onGroupByChange && (
         <Dropdown
@@ -147,6 +176,8 @@ export function FilterBar({
           onChange={onGroupByChange}
           options={GROUP_OPTIONS}
           label="Group"
+          externalOpen={pendingFilterOpen === 'group'}
+          onExternalOpened={onFilterOpened}
         />
       )}
 

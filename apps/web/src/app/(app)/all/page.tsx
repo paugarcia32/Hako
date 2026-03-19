@@ -4,12 +4,13 @@ import { BottomUrlBar } from '@/components/bottom-url-bar';
 import { FilterBar } from '@/components/filter-bar';
 import { ItemRow } from '@/components/item-row';
 import { ItemsSection } from '@/components/items-section';
+import { useKeyboardNav } from '@/contexts/keyboard-nav';
 import { useItemFiltering } from '@/hooks/use-item-filtering';
 import { useItemGrouping } from '@/hooks/use-item-grouping';
 import { buildGroups } from '@/lib/grouping-utils';
 import { trpc } from '@/lib/trpc';
 import { ChevronRightIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function AllPage() {
   const [showArchived, setShowArchived] = useState(false);
@@ -28,6 +29,7 @@ export default function AllPage() {
     },
   );
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const { setItems, pendingFilterOpen, setPendingFilterOpen } = useKeyboardNav();
 
   const {
     sort,
@@ -38,6 +40,11 @@ export default function AllPage() {
   } = useItemFiltering(data?.items ?? []);
 
   const groups = groupBy !== 'none' ? buildGroups(items, groupBy) : null;
+
+  useEffect(() => {
+    setItems(items);
+    return () => setItems([]);
+  }, [items, setItems]);
 
   return (
     <>
@@ -51,6 +58,8 @@ export default function AllPage() {
           onGroupByChange={setGroupBy}
           showArchived={showArchived}
           onToggleArchived={() => setShowArchived((v) => !v)}
+          pendingFilterOpen={pendingFilterOpen}
+          onFilterOpened={() => setPendingFilterOpen(null)}
         />
 
         {isError ? (

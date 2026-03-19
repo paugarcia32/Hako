@@ -4,16 +4,18 @@ import { BottomUrlBar } from '@/components/bottom-url-bar';
 import { FilterBar } from '@/components/filter-bar';
 import { ItemRow } from '@/components/item-row';
 import { ItemsSection } from '@/components/items-section';
+import { useKeyboardNav } from '@/contexts/keyboard-nav';
 import { useItemFiltering } from '@/hooks/use-item-filtering';
 import { trpc } from '@/lib/trpc';
 import { ArchiveBoxIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ArchivePage() {
   const { data, isLoading, isError, refetch } = trpc.items.list.useQuery({
     archivedOnly: true,
   });
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const { setItems, pendingFilterOpen, setPendingFilterOpen } = useKeyboardNav();
 
   const {
     sort,
@@ -23,6 +25,11 @@ export default function ArchivePage() {
     filtered: items,
   } = useItemFiltering(data?.items ?? []);
 
+  useEffect(() => {
+    setItems(items);
+    return () => setItems([]);
+  }, [items, setItems]);
+
   return (
     <>
       <div className="mx-auto max-w-3xl px-4 pt-4 pb-20">
@@ -31,6 +38,8 @@ export default function ArchivePage() {
           onSortChange={setSort}
           typeFilter={typeFilter}
           onTypeFilterChange={setTypeFilter}
+          pendingFilterOpen={pendingFilterOpen}
+          onFilterOpened={() => setPendingFilterOpen(null)}
         />
 
         {isError ? (

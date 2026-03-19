@@ -2,7 +2,7 @@
 
 import { signOut, useSession } from '@/lib/auth';
 import { useClickOutside } from '@/lib/use-click-outside';
-import { Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -75,6 +75,21 @@ export function UserMenu() {
           >
             <Cog6ToothIcon className="size-4 shrink-0 text-stone-400" />
             Settings
+          </Link>
+
+          {/* Keyboard shortcuts */}
+          <Link
+            href="/shortcuts"
+            onClick={() => setOpen(false)}
+            className="flex items-center justify-between gap-2.5 px-3.5 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800"
+          >
+            <span className="flex items-center gap-2.5">
+              <CommandLineIcon className="size-4 shrink-0 text-stone-400" />
+              Keyboard shortcuts
+            </span>
+            <kbd className="rounded border border-stone-200 px-1 py-0.5 font-mono text-[10px] text-stone-400 dark:border-stone-700">
+              ?
+            </kbd>
           </Link>
 
           <div className="my-1 h-px bg-stone-100 dark:bg-stone-800" />
