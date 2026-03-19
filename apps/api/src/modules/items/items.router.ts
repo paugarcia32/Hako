@@ -29,6 +29,20 @@ export class ItemsRouter {
         .input(z.object({ url: z.string().url(), collectionId: z.string().optional() }))
         .mutation(({ ctx, input }) => this.items.create(ctx.userId, input)),
 
+      update: this.trpc.protectedProcedure
+        .input(
+          z.object({
+            id: z.string(),
+            title: z.string().nullable().optional(),
+            description: z.string().nullable().optional(),
+            imageUrl: z.string().url().nullable().optional(),
+            type: z
+              .enum(['article', 'youtube', 'tweet', 'link', 'pinterest', 'dribbble'])
+              .optional(),
+          }),
+        )
+        .mutation(({ ctx, input }) => this.items.update(ctx.userId, input)),
+
       archive: this.trpc.protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(({ ctx, input }) => this.items.archive(ctx.userId, input.id)),
@@ -47,8 +61,7 @@ export class ItemsRouter {
         .input(z.object({ id: z.string() }))
         .mutation(({ ctx, input }) => this.items.delete(ctx.userId, input.id)),
 
-      count: this.trpc.protectedProcedure
-        .query(({ ctx }) => this.items.countInbox(ctx.userId)),
+      count: this.trpc.protectedProcedure.query(({ ctx }) => this.items.countInbox(ctx.userId)),
     });
   }
 }

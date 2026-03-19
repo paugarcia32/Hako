@@ -1,18 +1,20 @@
 'use client';
 
 import { AddToCollectionPopover } from '@/components/add-to-collection-popover';
+import { EditItemModal } from '@/components/edit-item-modal';
 import { useItemActions } from '@/hooks/use-item-actions';
 import { getCollectionIcon } from '@/lib/collection-icons';
+import type { Item } from '@hako/types';
+import { COLLECTION_COLORS } from '@hako/types';
+import { getFaviconUrl, getHostname } from '@hako/utils';
 import {
   ArchiveBoxArrowDownIcon,
   ArchiveBoxIcon,
   FolderPlusIcon,
   GlobeAltIcon,
+  PencilSquareIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import type { Item } from '@hako/types';
-import { COLLECTION_COLORS } from '@hako/types';
-import { getFaviconUrl, getHostname } from '@hako/utils';
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -89,6 +91,7 @@ export function ItemRow({
   const { archive, unarchive, deleteItem } = useItemActions();
   const [faviconError, setFaviconError] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [cardPos, setCardPos] = useState<{ top: number; left: number } | null>(null);
   const rowRef = useRef<HTMLLIElement>(null);
 
@@ -97,7 +100,7 @@ export function ItemRow({
   const firstCollection = item.collections?.[0];
 
   const isHovered = hoveredId === item.id;
-  const isActive = isHovered || popoverOpen;
+  const isActive = isHovered || popoverOpen || editOpen;
   const isDimmed = hoveredId !== null && !isHovered && !popoverOpen;
 
   function handleMouseEnter() {
@@ -198,6 +201,19 @@ export function ItemRow({
             className="rounded p-1 text-stone-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-30 dark:hover:bg-red-950/40 dark:hover:text-red-400"
           >
             <TrashIcon className="size-3.5" />
+          </button>
+
+          {/* Edit */}
+          <button
+            type="button"
+            title="Edit"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditOpen(true);
+            }}
+            className="rounded p-1 text-stone-400 transition-colors hover:bg-stone-200/60 hover:text-stone-600 dark:hover:bg-stone-700/60 dark:hover:text-stone-300"
+          >
+            <PencilSquareIcon className="size-3.5" />
           </button>
 
           {/* Add to collection */}
@@ -344,6 +360,15 @@ export function ItemRow({
         {/* Domain */}
         <span className="ml-3 shrink-0 text-xs text-stone-400 dark:text-stone-500">{hostname}</span>
       </div>
+
+      {/* Edit modal — portalled into body for the same reason as the hover card:
+          the inner div has translate-x-0.5 when isActive, which creates a new
+          containing block for position:fixed and breaks centering. */}
+      {editOpen &&
+        createPortal(
+          <EditItemModal item={item} onClose={() => setEditOpen(false)} />,
+          document.body,
+        )}
 
       {/* Hover card — portalled into body so CSS transforms on ancestors
           don't break the fixed positioning (any transform creates a new

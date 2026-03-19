@@ -349,6 +349,61 @@ describe('items tRPC router', () => {
     });
   });
 
+  describe('items.update', () => {
+    it('items.update rejects unauthenticated caller with UNAUTHORIZED', async () => {
+      const caller = await getCaller();
+      await expect(
+        caller.items.update({ id: 'some-id', title: 'New title' }),
+      ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+    });
+
+    it('updates title, description, imageUrl, and type', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id);
+      const caller = await getCaller(user.id);
+
+      const updated = await caller.items.update({
+        id: item.id,
+        title: 'Updated title',
+        description: 'Updated description',
+        imageUrl: 'https://example.com/image.jpg',
+        type: 'article',
+      });
+
+      expect(updated.title).toBe('Updated title');
+      expect(updated.description).toBe('Updated description');
+      expect(updated.imageUrl).toBe('https://example.com/image.jpg');
+      expect(updated.type).toBe('article');
+    });
+
+    it('can set nullable fields to null', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id, { title: 'Some title' });
+      const caller = await getCaller(user.id);
+
+      const updated = await caller.items.update({ id: item.id, title: null });
+
+      expect(updated.title).toBeNull();
+    });
+
+    it('throws when item belongs to a different user', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      const item = await createTestItem(user2.id);
+      const caller = await getCaller(user1.id);
+
+      await expect(caller.items.update({ id: item.id, title: 'Hacked' })).rejects.toThrow();
+    });
+
+    it('Zod rejects invalid imageUrl', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id);
+      const caller = await getCaller(user.id);
+
+      await expect(caller.items.update({ id: item.id, imageUrl: 'not-a-url' })).rejects.toThrow();
+    });
+  });
+
   describe('items.delete', () => {
     it('deletes the item, which no longer appears in list', async () => {
       const user = await createTestUser();

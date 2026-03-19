@@ -81,7 +81,9 @@
       "Read(//c/Program Files/**)",
       "Bash(docker exec:*)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm --filter api test -- --reporter=verbose)"
+      "Bash(pnpm --filter api test -- --reporter=verbose)",
+      "Bash(pnpm lint:*)",
+      "Bash(npx biome:*)"
     ]
   }
 }

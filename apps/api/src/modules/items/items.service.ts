@@ -1,4 +1,4 @@
-import type { CreateItemInput } from '@hako/types';
+import type { CreateItemInput, UpdateItemInput } from '@hako/types';
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ScraperService } from '../scraper/scraper.service';
@@ -125,6 +125,19 @@ export class ItemsService {
     return this.prisma.item.update({
       where: { id, userId },
       data: { isFavorite },
+    });
+  }
+
+  async update(userId: string, input: UpdateItemInput) {
+    const { id, title, description, imageUrl, type } = input;
+    return this.prisma.item.update({
+      where: { id, userId },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(imageUrl !== undefined && { imageUrl }),
+        ...(type !== undefined && { type }),
+      },
     });
   }
 

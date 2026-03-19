@@ -33,3 +33,11 @@ export type CreateItemInput = {
   url: string;
   collectionId?: string | undefined;
 };
+
+export type UpdateItemInput = {
+  id: string;
+  title?: string | null | undefined;
+  description?: string | null | undefined;
+  imageUrl?: string | null | undefined;
+  type?: ContentType | undefined;
+};
