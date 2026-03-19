@@ -26,6 +26,7 @@ function ShortcutRow({ keys, label }: ShortcutRowProps) {
       <div className="flex shrink-0 items-center gap-1">
         {keys.map((k, i) => (
           <kbd
+            // biome-ignore lint/suspicious/noArrayIndexKey: static shortcut key list, never reordered
             key={i}
             className="inline-flex min-w-[1.5rem] items-center justify-center rounded border border-stone-200 bg-stone-100 px-1.5 py-0.5 font-mono text-[11px] text-stone-600 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
           >
@@ -61,10 +62,13 @@ export function KeyboardShortcutsHelp() {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
       onClick={() => setHelpOpen(false)}
+      onKeyDown={(e) => e.key === 'Escape' && setHelpOpen(false)}
+      role="presentation"
     >
       <div
         className="w-full max-w-sm overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl dark:border-stone-700 dark:bg-stone-900"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5 dark:border-stone-800">

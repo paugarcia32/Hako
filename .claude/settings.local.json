@@ -97,7 +97,16 @@
       "Bash(find /c/Users/Pau/dev/hako/node_modules/.pnpm/@dnd-kit+core@6.3.1* -name *.esm.js)",
       "Bash(grep -r \"overflow\\\\|transform\\\\|will-change\" /c/Users/Pau/dev/hako/apps/web/src/app --include=*.tsx)",
       "Bash(pnpm --filter web tsc --noEmit)",
-      "Bash(npx --no-install tsc --noEmit --project apps/web/tsconfig.json)"
+      "Bash(npx --no-install tsc --noEmit --project apps/web/tsconfig.json)",
+      "Bash(npm run:*)",
+      "Bash(npx @biomejs/biome check src)",
+      "Bash(npx eslint:*)",
+      "Bash(npx @biomejs/biome check --fix src)",
+      "Bash(npx @biomejs/biome check --fix apps/api/src)",
+      "Bash(dir /b *.json)",
+      "Bash(dir /b appsapi*.json)",
+      "Bash(ls *.json)",
+      "Bash(ls apps/api/*.json)"
     ]
   }
 }

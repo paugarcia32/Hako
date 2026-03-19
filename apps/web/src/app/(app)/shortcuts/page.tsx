@@ -85,6 +85,7 @@ export default function ShortcutsPage() {
                   <div className="flex shrink-0 items-center gap-1">
                     {keys.map((k, i) => (
                       <kbd
+                        // biome-ignore lint/suspicious/noArrayIndexKey: static shortcut key list, never reordered
                         key={i}
                         className="inline-flex min-w-[1.75rem] items-center justify-center rounded border border-stone-200 bg-stone-50 px-1.5 py-1 font-mono text-xs text-stone-600 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
                       >

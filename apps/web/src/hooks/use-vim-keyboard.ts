@@ -43,13 +43,27 @@ export function useVimKeyboard() {
   const unarchiveRef = useRef(unarchive);
   const deleteItemRef = useRef(deleteItem);
 
-  useEffect(() => { itemsRef.current = items; }, [items]);
-  useEffect(() => { selectedItemIdRef.current = selectedItemId; }, [selectedItemId]);
-  useEffect(() => { pathnameRef.current = pathname; }, [pathname]);
-  useEffect(() => { helpOpenRef.current = helpOpen; }, [helpOpen]);
-  useEffect(() => { archiveRef.current = archive; }, [archive]);
-  useEffect(() => { unarchiveRef.current = unarchive; }, [unarchive]);
-  useEffect(() => { deleteItemRef.current = deleteItem; }, [deleteItem]);
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+  useEffect(() => {
+    selectedItemIdRef.current = selectedItemId;
+  }, [selectedItemId]);
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
+  useEffect(() => {
+    helpOpenRef.current = helpOpen;
+  }, [helpOpen]);
+  useEffect(() => {
+    archiveRef.current = archive;
+  }, [archive]);
+  useEffect(() => {
+    unarchiveRef.current = unarchive;
+  }, [unarchive]);
+  useEffect(() => {
+    deleteItemRef.current = deleteItem;
+  }, [deleteItem]);
 
   // Chord state (refs so the event listener always sees latest values)
   const pendingChord = useRef<'g' | 'f' | null>(null);
@@ -116,20 +130,55 @@ export function useVimKeyboard() {
             // gg — jump to first item
             e.preventDefault();
             const first = itemsRef.current[0];
-            if (first) { setSelectedItemId(first.id); scrollToItem(first.id); }
+            if (first) {
+              setSelectedItemId(first.id);
+              scrollToItem(first.id);
+            }
             return;
           }
-          if (e.key === '1') { e.preventDefault(); router.push('/inbox'); return; }
-          if (e.key === '2') { e.preventDefault(); router.push('/all'); return; }
-          if (e.key === '3') { e.preventDefault(); router.push('/collections'); return; }
-          if (e.key === '4') { e.preventDefault(); router.push('/archive'); return; }
-          if (e.key === 's') { e.preventDefault(); router.push('/settings'); return; }
+          if (e.key === '1') {
+            e.preventDefault();
+            router.push('/inbox');
+            return;
+          }
+          if (e.key === '2') {
+            e.preventDefault();
+            router.push('/all');
+            return;
+          }
+          if (e.key === '3') {
+            e.preventDefault();
+            router.push('/collections');
+            return;
+          }
+          if (e.key === '4') {
+            e.preventDefault();
+            router.push('/archive');
+            return;
+          }
+          if (e.key === 's') {
+            e.preventDefault();
+            router.push('/settings');
+            return;
+          }
         }
 
         if (chord === 'f') {
-          if (e.key === 's') { e.preventDefault(); setPendingFilterOpen('sort'); return; }
-          if (e.key === 't') { e.preventDefault(); setPendingFilterOpen('type'); return; }
-          if (e.key === 'g') { e.preventDefault(); setPendingFilterOpen('group'); return; }
+          if (e.key === 's') {
+            e.preventDefault();
+            setPendingFilterOpen('sort');
+            return;
+          }
+          if (e.key === 't') {
+            e.preventDefault();
+            setPendingFilterOpen('type');
+            return;
+          }
+          if (e.key === 'g') {
+            e.preventDefault();
+            setPendingFilterOpen('group');
+            return;
+          }
         }
 
         // Unrecognized chord key — clear and do nothing
@@ -170,7 +219,10 @@ export function useVimKeyboard() {
       if (e.key === 'G') {
         e.preventDefault();
         const last = itemsRef.current[itemsRef.current.length - 1];
-        if (last) { setSelectedItemId(last.id); scrollToItem(last.id); }
+        if (last) {
+          setSelectedItemId(last.id);
+          scrollToItem(last.id);
+        }
         return;
       }
 
@@ -179,20 +231,16 @@ export function useVimKeyboard() {
         e.preventDefault();
         const curr = pathnameRef.current;
         const idx = TABS.findIndex((t) => curr.startsWith(t));
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (idx > 0) router.push(TABS[idx - 1]!);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        else if (idx === 0) router.push(TABS[TABS.length - 1]!);
+        const prev = idx > 0 ? TABS[idx - 1] : TABS[TABS.length - 1];
+        if (prev) router.push(prev);
         return;
       }
       if (e.key === 'l') {
         e.preventDefault();
         const curr = pathnameRef.current;
         const idx = TABS.findIndex((t) => curr.startsWith(t));
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (idx >= 0 && idx < TABS.length - 1) router.push(TABS[idx + 1]!);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        else if (idx === TABS.length - 1) router.push(TABS[0]!);
+        const next = idx >= 0 && idx < TABS.length - 1 ? TABS[idx + 1] : TABS[0];
+        if (next) router.push(next);
         return;
       }
 

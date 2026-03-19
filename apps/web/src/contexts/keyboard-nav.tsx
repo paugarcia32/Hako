@@ -1,8 +1,8 @@
 'use client';
 
+import { useVimKeyboard } from '@/hooks/use-vim-keyboard';
 import type { Item } from '@hako/types';
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { useVimKeyboard } from '@/hooks/use-vim-keyboard';
 
 interface KeyboardNavContextValue {
   items: Item[];
@@ -34,9 +34,9 @@ export function KeyboardNavProvider({ children }: { children: React.ReactNode })
   const [items, setItemsRaw] = useState<Item[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
-  const [pendingFilterOpen, setPendingFilterOpen] = useState<
-    'sort' | 'type' | 'group' | null
-  >(null);
+  const [pendingFilterOpen, setPendingFilterOpen] = useState<'sort' | 'type' | 'group' | null>(
+    null,
+  );
   const [helpOpen, setHelpOpen] = useState(false);
 
   const setItems = useCallback((newItems: Item[]) => setItemsRaw(newItems), []);
