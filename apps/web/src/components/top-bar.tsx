@@ -1,15 +1,10 @@
 'use client';
 
-import {
-  ArchiveBoxIcon,
-  FolderIcon,
-  InboxIcon,
-  QueueListIcon,
-} from '@heroicons/react/24/outline';
+import { trpc } from '@/lib/trpc';
+import { ArchiveBoxIcon, FolderIcon, InboxIcon, QueueListIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { trpc } from '@/lib/trpc';
 import { Logo } from './logo';
 import { UserMenu } from './user-menu';
 

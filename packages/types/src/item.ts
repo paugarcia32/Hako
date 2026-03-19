@@ -1,6 +1,6 @@
 import type { ID, Timestamp } from './common';
 
-export type ContentType = 'article' | 'youtube' | 'tweet' | 'link' | 'pinterest' | 'dribbble';
+export type ContentType = 'link' | 'article' | 'video' | 'image' | 'post' | 'document';
 
 export type ItemStatus = 'pending' | 'processing' | 'done' | 'failed';
 

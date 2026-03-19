@@ -7,14 +7,7 @@ import { COLLECTION_COLORS } from '@hako/types';
 import { CheckIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 
-const CONTENT_TYPES: ContentType[] = [
-  'article',
-  'youtube',
-  'tweet',
-  'link',
-  'pinterest',
-  'dribbble',
-];
+const CONTENT_TYPES: ContentType[] = ['link', 'article', 'video', 'image', 'post', 'document'];
 
 interface EditItemModalProps {
   item: Item;

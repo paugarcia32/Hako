@@ -5,7 +5,7 @@ import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useRef, useState } from 'react';
 
 export type SortOption = 'date-desc' | 'date-asc' | 'alpha-asc' | 'alpha-desc';
-export type TypeFilter = 'all' | 'article' | 'youtube' | 'tweet' | 'pinterest' | 'link';
+export type TypeFilter = 'all' | 'link' | 'article' | 'video' | 'image' | 'post';
 export type GroupBy = 'none' | 'date' | 'collection';
 
 const SORT_LABELS: Record<SortOption, string> = {
@@ -17,11 +17,11 @@ const SORT_LABELS: Record<SortOption, string> = {
 
 const TYPE_LABELS: Record<TypeFilter, string> = {
   all: 'All types',
-  article: 'Article',
-  youtube: 'YouTube',
-  tweet: 'Tweet',
-  pinterest: 'Pinterest',
   link: 'Link',
+  article: 'Article',
+  video: 'Video',
+  image: 'Image',
+  post: 'Post',
 };
 
 interface DropdownProps<T extends string> {

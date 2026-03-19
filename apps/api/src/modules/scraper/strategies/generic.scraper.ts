@@ -53,7 +53,7 @@ export class GenericScraperService implements IScraper {
   }
 
   detectType(url: string): ContentType {
-    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'video';
     return 'article';
   }
 }

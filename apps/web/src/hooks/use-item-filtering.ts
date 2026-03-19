@@ -6,7 +6,7 @@ export function useItemFiltering(items: Item[]) {
   const [sort, setSort] = useState<SortOption>('date-desc');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
 
-  let result = typeFilter !== 'all' ? items.filter((item) => item.type === typeFilter) : items;
+  const result = typeFilter !== 'all' ? items.filter((item) => item.type === typeFilter) : items;
   const filtered = [...result].sort((a, b) => {
     if (sort === 'date-desc')
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();

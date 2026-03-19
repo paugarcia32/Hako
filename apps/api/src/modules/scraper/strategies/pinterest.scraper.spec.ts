@@ -103,7 +103,7 @@ describe('PinterestScraperService', () => {
       expect(result.author).toBe('Jane Doe');
       expect(result.imageUrl).toBe('https://i.pinimg.com/originals/ab.jpg');
       expect(result.siteName).toBe('Pinterest');
-      expect(result.type).toBe('pinterest');
+      expect(result.type).toBe('image');
     });
 
     it('returns oEmbed title even when HTML phase fails', async () => {
@@ -157,7 +157,7 @@ describe('PinterestScraperService', () => {
       const result = await service.scrape('https://www.pinterest.com/pin/123/');
       expect(result.title).toBe('pinterest.com');
       expect(result.imageUrl).toBeNull();
-      expect(result.type).toBe('pinterest');
+      expect(result.type).toBe('image');
     });
 
     it('falls back to hostname title when oEmbed throws a network error', async () => {
@@ -172,7 +172,7 @@ describe('PinterestScraperService', () => {
       );
       const result = await service.scrape('https://www.pinterest.com/pin/123/');
       expect(result.title).toBe('pinterest.com');
-      expect(result.type).toBe('pinterest');
+      expect(result.type).toBe('image');
     });
   });
 });

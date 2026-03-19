@@ -103,7 +103,7 @@ describe('TwitterScraperService', () => {
       expect(result.title).toBe('Hello world');
       expect(result.author).toBe('Test User');
       expect(result.imageUrl).toBe('https://pbs.twimg.com/media/photo.jpg');
-      expect(result.type).toBe('tweet');
+      expect(result.type).toBe('post');
       expect(result.siteName).toBe('X');
     });
 
@@ -174,7 +174,7 @@ describe('TwitterScraperService', () => {
 
       const { title, type } = await service.scrape('https://twitter.com/user/status/1234500000');
       expect(title).toBe('Tweet from twitter.com domain');
-      expect(type).toBe('tweet');
+      expect(type).toBe('post');
     });
   });
 
@@ -203,7 +203,7 @@ describe('TwitterScraperService', () => {
       const { title, author, type } = await service.scrape('https://x.com/user/status/2222222222');
       expect(title).toBe('Tweet text from oEmbed');
       expect(author).toBe('oEmbed Author');
-      expect(type).toBe('tweet');
+      expect(type).toBe('post');
     });
 
     it('strips <a> t.co elements and remaining HTML tags from oEmbed', async () => {
@@ -286,7 +286,7 @@ describe('TwitterScraperService', () => {
       expect(result.title).toBeNull();
       expect(result.description).toBeNull();
       expect(result.imageUrl).toBeNull();
-      expect(result.type).toBe('tweet');
+      expect(result.type).toBe('post');
     });
   });
 });

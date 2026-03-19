@@ -7,8 +7,8 @@ import { ItemRow } from '@/components/item-row';
 import { ItemsSection } from '@/components/items-section';
 import { useItemFiltering } from '@/hooks/use-item-filtering';
 import { trpc } from '@/lib/trpc';
-import { InboxArrowDownIcon } from '@heroicons/react/24/outline';
 import type { Item } from '@hako/types';
+import { InboxArrowDownIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 export default function InboxPage() {
@@ -26,9 +26,13 @@ export default function InboxPage() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const { sort, setSort, typeFilter, setTypeFilter, filtered: items } = useItemFiltering(
-    data?.items ?? [],
-  );
+  const {
+    sort,
+    setSort,
+    typeFilter,
+    setTypeFilter,
+    filtered: items,
+  } = useItemFiltering(data?.items ?? []);
 
   return (
     <>

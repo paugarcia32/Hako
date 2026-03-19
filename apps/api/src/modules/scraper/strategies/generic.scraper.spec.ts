@@ -61,12 +61,12 @@ describe('GenericScraperService', () => {
   // ── Type detection ────────────────────────────────────────────────────────
 
   describe('detectType', () => {
-    it('returns youtube for youtube.com', () => {
-      expect(service.detectType('https://www.youtube.com/watch?v=abc')).toBe('youtube');
+    it('returns video for youtube.com', () => {
+      expect(service.detectType('https://www.youtube.com/watch?v=abc')).toBe('video');
     });
 
-    it('returns youtube for youtu.be', () => {
-      expect(service.detectType('https://youtu.be/abc')).toBe('youtube');
+    it('returns video for youtu.be', () => {
+      expect(service.detectType('https://youtu.be/abc')).toBe('video');
     });
 
     it('returns article for generic URLs', () => {
@@ -241,7 +241,7 @@ describe('GenericScraperService', () => {
     it('still returns the correct type even on network error', async () => {
       mockFetchError();
       const result = await service.scrape('https://youtube.com/watch?v=1');
-      expect(result.type).toBe('youtube');
+      expect(result.type).toBe('video');
     });
 
     it('returns nulls when response body is null', async () => {

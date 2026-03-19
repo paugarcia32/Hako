@@ -9,8 +9,8 @@ import { useItemFiltering } from '@/hooks/use-item-filtering';
 import { useItemGrouping } from '@/hooks/use-item-grouping';
 import { buildGroups } from '@/lib/grouping-utils';
 import { trpc } from '@/lib/trpc';
-import { ChevronRightIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
 import type { Item } from '@hako/types';
+import { ChevronRightIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 export default function AllPage() {
@@ -32,9 +32,13 @@ export default function AllPage() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const { sort, setSort, typeFilter, setTypeFilter, filtered: items } = useItemFiltering(
-    data?.items ?? [],
-  );
+  const {
+    sort,
+    setSort,
+    typeFilter,
+    setTypeFilter,
+    filtered: items,
+  } = useItemFiltering(data?.items ?? []);
 
   const groups = groupBy !== 'none' ? buildGroups(items, groupBy) : null;
 

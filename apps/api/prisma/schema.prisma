@@ -156,12 +156,12 @@ model CollectionItem {
 }
 
 enum ContentType {
-  article
-  youtube
-  tweet
   link
-  pinterest
-  dribbble
+  article
+  video
+  image
+  post
+  document
 }
 
 enum ItemStatus {

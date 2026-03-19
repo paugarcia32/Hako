@@ -111,7 +111,7 @@ export class TwitterScraperService implements IScraper {
                 content: null,
                 author,
                 siteName,
-                type: 'tweet',
+                type: 'post',
               };
             }
           }
@@ -160,7 +160,7 @@ export class TwitterScraperService implements IScraper {
               content: null,
               author,
               siteName,
-              type: 'tweet',
+              type: 'post',
             };
           }
         } else {
@@ -221,7 +221,7 @@ export class TwitterScraperService implements IScraper {
       this.logger.warn(`Twitter HTML phase failed for ${url}: ${String(err)}`);
     }
 
-    return emptyResult('tweet');
+    return emptyResult('post');
   }
 
   /**

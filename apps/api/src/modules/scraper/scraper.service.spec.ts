@@ -31,7 +31,7 @@ describe('ScraperService (orchestrator)', () => {
   describe('strategy routing', () => {
     it('delegates to the first strategy whose canHandle returns true', async () => {
       const twitter = makeStrategy(false);
-      const pinterest = makeStrategy(true, { type: 'pinterest', siteName: 'Pinterest' });
+      const pinterest = makeStrategy(true, { type: 'image', siteName: 'Pinterest' });
       const generic = makeStrategy(true, { type: 'article' });
 
       const service = new ScraperService([twitter, pinterest, generic]);
@@ -41,7 +41,7 @@ describe('ScraperService (orchestrator)', () => {
       expect(pinterest.canHandle).toHaveBeenCalledWith('https://www.pinterest.com/pin/123/');
       expect(pinterest.scrape).toHaveBeenCalledWith('https://www.pinterest.com/pin/123/');
       expect(generic.scrape).not.toHaveBeenCalled();
-      expect(result.type).toBe('pinterest');
+      expect(result.type).toBe('image');
     });
 
     it('skips non-matching strategies and falls back to generic', async () => {
@@ -59,7 +59,7 @@ describe('ScraperService (orchestrator)', () => {
     });
 
     it('routes twitter.com URLs to the Twitter strategy', async () => {
-      const twitter = makeStrategy(true, { type: 'tweet', siteName: 'X' });
+      const twitter = makeStrategy(true, { type: 'post', siteName: 'X' });
       const pinterest = makeStrategy(false);
       const generic = makeStrategy(true);
 
@@ -78,7 +78,7 @@ describe('ScraperService (orchestrator)', () => {
         content: null,
         author: 'Author',
         siteName: 'X',
-        type: 'tweet',
+        type: 'post',
       };
       const twitter = makeStrategy(true, expected);
       const service = new ScraperService([twitter]);

@@ -68,7 +68,7 @@ export class YoutubeScraperService implements IScraper {
             content: null,
             author,
             siteName: 'YouTube',
-            type: 'youtube',
+            type: 'video',
           };
         }
       } else {
@@ -99,13 +99,13 @@ export class YoutubeScraperService implements IScraper {
           content: null,
           author: null,
           siteName: 'YouTube',
-          type: 'youtube',
+          type: 'video',
         };
       }
     } catch (err) {
       this.logger.warn(`YouTube HTML fallback failed for ${url}: ${String(err)}`);
     }
 
-    return emptyResult('youtube');
+    return emptyResult('video');
   }
 }

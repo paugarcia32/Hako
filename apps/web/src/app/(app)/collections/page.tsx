@@ -5,9 +5,9 @@ import { IconPicker } from '@/components/icon-picker';
 import { ItemsSection } from '@/components/items-section';
 import { getCollectionIcon } from '@/lib/collection-icons';
 import { trpc } from '@/lib/trpc';
-import { FolderIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type { Collection } from '@hako/types';
 import { COLLECTION_COLORS } from '@hako/types';
+import { FolderIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useState } from 'react';
 

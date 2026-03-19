@@ -48,7 +48,7 @@ export class DribbbleScraperService implements IScraper {
           content: null,
           author,
           siteName: 'Dribbble',
-          type: 'dribbble',
+          type: 'image',
         };
       }
     } catch (err) {
@@ -112,7 +112,7 @@ export class DribbbleScraperService implements IScraper {
       content: null,
       author: null,
       siteName: 'Dribbble',
-      type: 'dribbble',
+      type: 'image',
     };
   }
 

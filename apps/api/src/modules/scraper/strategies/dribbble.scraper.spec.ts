@@ -198,7 +198,7 @@ describe('DribbbleScraperService', () => {
     it('always sets type to dribbble', async () => {
       mockFetch(SHOT_HTML);
       const { type } = await service.scrape('https://dribbble.com/shots/12345678');
-      expect(type).toBe('dribbble');
+      expect(type).toBe('image');
     });
 
     it('always sets siteName to Dribbble', async () => {
@@ -249,7 +249,7 @@ describe('DribbbleScraperService', () => {
       const { type } = await service.scrape(
         'https://dribbble.com/shots/25614963-Duwy-Personal-Portfolio-Website',
       );
-      expect(type).toBe('dribbble');
+      expect(type).toBe('image');
     });
 
     it('still returns siteName Dribbble on WAF challenge', async () => {
@@ -287,7 +287,7 @@ describe('DribbbleScraperService', () => {
     it('always returns type dribbble even on error', async () => {
       mockFetchError();
       const { type } = await service.scrape('https://dribbble.com/shots/12345678');
-      expect(type).toBe('dribbble');
+      expect(type).toBe('image');
     });
 
     it('returns null body fallback to slug', async () => {
@@ -305,7 +305,7 @@ describe('DribbbleScraperService', () => {
         content: null,
         author: null,
         siteName: 'Dribbble',
-        type: 'dribbble',
+        type: 'image',
       });
     });
   });
@@ -325,7 +325,7 @@ describe('DribbbleScraperService', () => {
         imageUrl: 'https://cdn.dribbble.com/userupload/shot-preview.png',
         content: null,
         siteName: 'Dribbble',
-        type: 'dribbble',
+        type: 'image',
       });
     });
 
@@ -335,7 +335,7 @@ describe('DribbbleScraperService', () => {
         'https://dribbble.com/shots/25614963-Duwy-Personal-Portfolio-Website',
       );
       expect(result.title).toBe('Duwy Personal Portfolio Website');
-      expect(result.type).toBe('dribbble');
+      expect(result.type).toBe('image');
       expect(result.siteName).toBe('Dribbble');
     });
   });

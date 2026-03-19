@@ -1,9 +1,9 @@
 'use client';
 
-import { useClickOutside } from '@/lib/use-click-outside';
 import { trpc } from '@/lib/trpc';
-import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { useClickOutside } from '@/lib/use-click-outside';
 import { getHostname } from '@hako/utils';
+import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useRef, useState } from 'react';
 
 interface Props {

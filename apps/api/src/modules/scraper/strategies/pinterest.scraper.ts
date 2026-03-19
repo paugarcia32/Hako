@@ -13,7 +13,7 @@ export class PinterestScraperService implements IScraper {
   }
 
   async scrape(url: string): Promise<ScrapeResult> {
-    const type = 'pinterest' as const;
+    const type = 'image' as const;
     const siteName = 'Pinterest';
 
     let title: string | null = null;

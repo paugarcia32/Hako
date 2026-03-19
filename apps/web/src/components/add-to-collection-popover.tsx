@@ -1,11 +1,11 @@
 'use client';
 
 import { getCollectionIcon } from '@/lib/collection-icons';
-import { useClickOutside } from '@/lib/use-click-outside';
 import { trpc } from '@/lib/trpc';
-import { CheckIcon } from '@heroicons/react/24/outline';
+import { useClickOutside } from '@/lib/use-click-outside';
 import type { Item } from '@hako/types';
 import { COLLECTION_COLORS } from '@hako/types';
+import { CheckIcon } from '@heroicons/react/24/outline';
 import { useRef } from 'react';
 
 interface AddToCollectionPopoverProps {

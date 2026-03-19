@@ -36,9 +36,7 @@ export class ItemsRouter {
             title: z.string().nullable().optional(),
             description: z.string().nullable().optional(),
             imageUrl: z.string().url().nullable().optional(),
-            type: z
-              .enum(['article', 'youtube', 'tweet', 'link', 'pinterest', 'dribbble'])
-              .optional(),
+            type: z.enum(['link', 'article', 'video', 'image', 'post', 'document']).optional(),
           }),
         )
         .mutation(({ ctx, input }) => this.items.update(ctx.userId, input)),

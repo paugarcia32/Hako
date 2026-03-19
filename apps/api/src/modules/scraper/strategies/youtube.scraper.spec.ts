@@ -144,7 +144,7 @@ describe('YoutubeScraperService', () => {
     it('sets type to youtube', async () => {
       mockFetchSequence({ body: OEMBED_VIDEO, isJson: true }, { body: DESCRIPTION_HTML });
       const { type } = await service.scrape('https://www.youtube.com/watch?v=abc123');
-      expect(type).toBe('youtube');
+      expect(type).toBe('video');
     });
 
     it('fetches description from HTML after successful oEmbed', async () => {
@@ -313,13 +313,13 @@ describe('YoutubeScraperService', () => {
     it('always returns type youtube even when both phases fail', async () => {
       mockFetchError();
       const { type } = await service.scrape('https://www.youtube.com/watch?v=abc123');
-      expect(type).toBe('youtube');
+      expect(type).toBe('video');
     });
 
     it('returns type youtube for youtu.be URLs too', async () => {
       mockFetchError();
       const { type } = await service.scrape('https://youtu.be/abc123');
-      expect(type).toBe('youtube');
+      expect(type).toBe('video');
     });
 
     it('always returns the full result shape', async () => {
@@ -332,7 +332,7 @@ describe('YoutubeScraperService', () => {
         content: null,
         author: null,
         siteName: null,
-        type: 'youtube',
+        type: 'video',
       });
     });
 
@@ -372,7 +372,7 @@ describe('YoutubeScraperService', () => {
         content: null,
         author: 'Cool Channel',
         siteName: 'YouTube',
-        type: 'youtube',
+        type: 'video',
       });
     });
 

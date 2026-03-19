@@ -9,9 +9,9 @@ import { ItemsSection } from '@/components/items-section';
 import { useItemFiltering } from '@/hooks/use-item-filtering';
 import { getCollectionIcon } from '@/lib/collection-icons';
 import { trpc } from '@/lib/trpc';
-import { ArrowLeftIcon, InboxIcon, PlusIcon } from '@heroicons/react/24/outline';
 import type { Item } from '@hako/types';
 import { COLLECTION_COLORS } from '@hako/types';
+import { ArrowLeftIcon, InboxIcon, PlusIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { use, useRef, useState } from 'react';
 
@@ -47,9 +47,13 @@ export default function CollectionDetailPage({
 
   const existingItemIds = new Set(data?.items.map((i) => i.id) ?? []);
 
-  const { sort, setSort, typeFilter, setTypeFilter, filtered: items } = useItemFiltering(
-    data?.items ?? [],
-  );
+  const {
+    sort,
+    setSort,
+    typeFilter,
+    setTypeFilter,
+    filtered: items,
+  } = useItemFiltering(data?.items ?? []);
 
   return (
     <>
