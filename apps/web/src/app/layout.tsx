@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
+import { headers } from 'next/headers';
 import './globals.css';
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -21,8 +22,9 @@ export const metadata: Metadata = {
 // Blocking inline script — must run before first paint to avoid theme flash.
 // dangerouslySetInnerHTML is intentional here: content is a static string,
 // not user input, so there is no XSS risk.
-const ThemeScript = () => (
+const ThemeScript = ({ nonce }: { nonce: string }) => (
   <script
+    nonce={nonce}
     // biome-ignore lint/security/noDangerouslySetInnerHtml: static theme init script
     dangerouslySetInnerHTML={{
       __html: `(function(){try{var s=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(s==='dark'||(!s&&d)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
@@ -30,11 +32,12 @@ const ThemeScript = () => (
   />
 );
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const nonce = (await headers()).get('x-nonce') ?? '';
   return (
     <html lang="en" className={plusJakarta.variable} suppressHydrationWarning>
       <head>
-        <ThemeScript />
+        <ThemeScript nonce={nonce} />
       </head>
       <body suppressHydrationWarning>{children}</body>
     </html>
