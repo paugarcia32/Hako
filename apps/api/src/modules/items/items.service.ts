@@ -16,7 +16,9 @@ type FindAllOptions = {
   collectionId?: string | undefined;
   /** Filter by content type */
   type?: 'link' | 'article' | 'video' | 'image' | 'post' | 'document' | undefined;
-  /** Sort direction for createdAt (default: desc) */
+  /** Sort field (default: createdAt) */
+  sortBy?: 'createdAt' | 'title' | undefined;
+  /** Sort direction (default: desc) */
   sortDir?: 'asc' | 'desc' | undefined;
 };
 
@@ -77,6 +79,7 @@ export class ItemsService {
       includeArchived,
       collectionId,
       type,
+      sortBy,
       sortDir,
     }: FindAllOptions,
   ) {
@@ -99,7 +102,10 @@ export class ItemsService {
       include: { collections: { include: { collection: true } } },
       take: limit + 1,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-      orderBy: { createdAt: sortDir === 'asc' ? 'asc' : 'desc' },
+      orderBy:
+        sortBy === 'title'
+          ? { title: sortDir === 'asc' ? 'asc' : 'desc' }
+          : { createdAt: sortDir === 'asc' ? 'asc' : 'desc' },
     });
 
     const hasMore = items.length > limit;

@@ -294,6 +294,63 @@ describe('ItemsService', () => {
       );
     });
 
+    it('returns items ordered by title ascending when sortBy is title and sortDir is asc', async () => {
+      const user = await createTestUser();
+      await createTestItem(user.id, { title: 'Banana' });
+      await createTestItem(user.id, { title: 'Apple' });
+      await createTestItem(user.id, { title: 'Cherry' });
+
+      const result = await service.findAll(user.id, { limit: 10, sortBy: 'title', sortDir: 'asc' });
+
+      expect(result.items[0]?.title).toBe('Apple');
+      expect(result.items[1]?.title).toBe('Banana');
+      expect(result.items[2]?.title).toBe('Cherry');
+    });
+
+    it('returns items ordered by title descending when sortBy is title and sortDir is desc', async () => {
+      const user = await createTestUser();
+      await createTestItem(user.id, { title: 'Banana' });
+      await createTestItem(user.id, { title: 'Apple' });
+      await createTestItem(user.id, { title: 'Cherry' });
+
+      const result = await service.findAll(user.id, {
+        limit: 10,
+        sortBy: 'title',
+        sortDir: 'desc',
+      });
+
+      expect(result.items[0]?.title).toBe('Cherry');
+      expect(result.items[1]?.title).toBe('Banana');
+      expect(result.items[2]?.title).toBe('Apple');
+    });
+
+    it('cursor pagination preserves title order across pages', async () => {
+      const user = await createTestUser();
+      await createTestItem(user.id, { title: 'Echo' });
+      await createTestItem(user.id, { title: 'Alpha' });
+      await createTestItem(user.id, { title: 'Golf' });
+      await createTestItem(user.id, { title: 'Bravo' });
+      await createTestItem(user.id, { title: 'Foxtrot' });
+
+      const page1 = await service.findAll(user.id, { limit: 3, sortBy: 'title', sortDir: 'asc' });
+      expect(page1.nextCursor).not.toBeNull();
+      expect(page1.items.map((i) => i.title)).toEqual(['Alpha', 'Bravo', 'Echo']);
+
+      const page2 = await service.findAll(user.id, {
+        limit: 3,
+        sortBy: 'title',
+        sortDir: 'asc',
+        // biome-ignore lint/style/noNonNullAssertion: nextCursor presence is asserted on the line above
+        cursor: page1.nextCursor!,
+      });
+      expect(page2.items.map((i) => i.title)).toEqual(['Foxtrot', 'Golf']);
+
+      const page1Ids = new Set(page1.items.map((i) => i.id));
+      for (const item of page2.items) {
+        expect(page1Ids.has(item.id)).toBe(false);
+      }
+    });
+
     it('type filter combines with inboxOnly', async () => {
       const user = await createTestUser();
       const collection = await createTestCollection(user.id);

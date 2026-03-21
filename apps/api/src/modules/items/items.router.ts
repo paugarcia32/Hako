@@ -22,6 +22,7 @@ export class ItemsRouter {
             includeArchived: z.boolean().optional(),
             collectionId: z.string().optional(),
             type: z.enum(['link', 'article', 'video', 'image', 'post', 'document']).optional(),
+            sortBy: z.enum(['createdAt', 'title']).default('createdAt'),
             sortDir: z.enum(['asc', 'desc']).optional(),
           }),
         )

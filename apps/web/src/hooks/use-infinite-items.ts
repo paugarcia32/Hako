@@ -29,7 +29,8 @@ export function useInfiniteItems({
   placeholderData: usePlaceholderData,
   refetchInterval,
 }: UseInfiniteItemsParams) {
-  const sortDir = sort === 'date-asc' ? 'asc' : 'desc';
+  const sortBy = sort === 'alpha-asc' || sort === 'alpha-desc' ? 'title' : 'createdAt';
+  const sortDir = sort === 'alpha-asc' || sort === 'date-asc' ? 'asc' : 'desc';
   const type = typeFilter !== 'all' ? typeFilter : undefined;
 
   const query = trpc.items.list.useInfiniteQuery(
@@ -40,6 +41,7 @@ export function useInfiniteItems({
       includeArchived,
       collectionId,
       type,
+      sortBy,
       sortDir,
     },
     {
@@ -50,19 +52,7 @@ export function useInfiniteItems({
     },
   );
 
-  const allItems = useMemo(
-    () => query.data?.pages.flatMap((page) => page.items) ?? [],
-    [query.data],
-  );
-
-  const items = useMemo(() => {
-    if (sort !== 'alpha-asc' && sort !== 'alpha-desc') return allItems;
-    return [...allItems].sort((a, b) => {
-      const ta = (a.title?.trim() || a.url).toLowerCase();
-      const tb = (b.title?.trim() || b.url).toLowerCase();
-      return sort === 'alpha-asc' ? ta.localeCompare(tb) : tb.localeCompare(ta);
-    });
-  }, [allItems, sort]);
+  const items = useMemo(() => query.data?.pages.flatMap((page) => page.items) ?? [], [query.data]);
 
   return {
     items,

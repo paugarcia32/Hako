@@ -220,6 +220,28 @@ describe('items tRPC router', () => {
       await expect(caller.items.list({ sortDir: 'random' })).rejects.toThrow();
     });
 
+    it('returns items ordered alphabetically when sortBy is title', async () => {
+      const user = await createTestUser();
+      await createTestItem(user.id, { title: 'Zebra' });
+      await createTestItem(user.id, { title: 'Aardvark' });
+      await createTestItem(user.id, { title: 'Mango' });
+      const caller = await getCaller(user.id);
+
+      const result = await caller.items.list({ sortBy: 'title', sortDir: 'asc' });
+
+      expect(result.items[0]?.title).toBe('Aardvark');
+      expect(result.items[1]?.title).toBe('Mango');
+      expect(result.items[2]?.title).toBe('Zebra');
+    });
+
+    it('Zod rejects invalid sortBy value', async () => {
+      const user = await createTestUser();
+      const caller = await getCaller(user.id);
+
+      // @ts-expect-error — intentionally passing invalid input
+      await expect(caller.items.list({ sortBy: 'url' })).rejects.toThrow();
+    });
+
     it('filters items by collectionId', async () => {
       const user = await createTestUser();
       const col1 = await createTestCollection(user.id);
