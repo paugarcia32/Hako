@@ -2,9 +2,9 @@
 
 import { BottomUrlBar } from '@/components/bottom-url-bar';
 import { FilterBar } from '@/components/filter-bar';
-import { ItemRow } from '@/components/item-row';
 import { ItemsSection } from '@/components/items-section';
 import { ScrollSentinel } from '@/components/scroll-sentinel';
+import { VirtualItemList } from '@/components/virtual-item-list';
 import { useKeyboardNav } from '@/contexts/keyboard-nav';
 import { useInfiniteItems } from '@/hooks/use-infinite-items';
 import { useItemFiltering } from '@/hooks/use-item-filtering';
@@ -66,17 +66,12 @@ export default function ArchivePage() {
               </div>
             ) : (
               <>
-                <ul className="space-y-0.5">
-                  {items.map((item) => (
-                    <ItemRow
-                      key={item.id}
-                      item={item}
-                      showCollection={true}
-                      hoveredId={hoveredId}
-                      onHoverChange={setHoveredId}
-                    />
-                  ))}
-                </ul>
+                <VirtualItemList
+                  items={items}
+                  showCollection={true}
+                  hoveredId={hoveredId}
+                  onHoverChange={setHoveredId}
+                />
                 <ScrollSentinel
                   onIntersect={fetchNextPage}
                   isFetchingNextPage={isFetchingNextPage}

@@ -4,10 +4,10 @@ import { AddItemsToCollectionPopover } from '@/components/add-items-to-collectio
 import { AddSectionButton } from '@/components/add-section-button';
 import { BottomUrlBar } from '@/components/bottom-url-bar';
 import { FilterBar, type ViewMode } from '@/components/filter-bar';
-import { ItemRow } from '@/components/item-row';
 import { ItemsSection } from '@/components/items-section';
 import { ScrollSentinel } from '@/components/scroll-sentinel';
 import { SectionedItemList } from '@/components/sectioned-item-list';
+import { VirtualItemList } from '@/components/virtual-item-list';
 import { useKeyboardNav } from '@/contexts/keyboard-nav';
 import { useInfiniteItems } from '@/hooks/use-infinite-items';
 import { useItemFiltering } from '@/hooks/use-item-filtering';
@@ -185,25 +185,19 @@ export default function CollectionDetailPage({
               </>
             ) : (
               <>
-                <ul className="space-y-0.5">
-                  {items.map((item) => {
-                    const sectionName =
-                      hasSections && item.sectionId
+                <VirtualItemList
+                  items={items}
+                  showCollection={false}
+                  showArchivedBadge={showArchived}
+                  {...(hasSections && {
+                    getSectionName: (item) =>
+                      item.sectionId
                         ? sections.find((s) => s.id === item.sectionId)?.name
-                        : undefined;
-                    return (
-                      <ItemRow
-                        key={item.id}
-                        item={item}
-                        showCollection={false}
-                        showArchivedBadge={showArchived}
-                        sectionName={sectionName}
-                        hoveredId={hoveredId}
-                        onHoverChange={setHoveredId}
-                      />
-                    );
+                        : undefined,
                   })}
-                </ul>
+                  hoveredId={hoveredId}
+                  onHoverChange={setHoveredId}
+                />
                 <ScrollSentinel
                   onIntersect={fetchNextPage}
                   isFetchingNextPage={isFetchingNextPage}

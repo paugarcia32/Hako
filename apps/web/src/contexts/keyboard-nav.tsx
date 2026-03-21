@@ -15,6 +15,8 @@ interface KeyboardNavContextValue {
   setPendingFilterOpen: (v: 'sort' | 'type' | 'group' | null) => void;
   helpOpen: boolean;
   setHelpOpen: (v: boolean) => void;
+  virtualScrollToIndex: ((index: number) => void) | null;
+  setVirtualScrollToIndex: (fn: ((index: number) => void) | null) => void;
 }
 
 const KeyboardNavContext = createContext<KeyboardNavContextValue | null>(null);
@@ -38,8 +40,15 @@ export function KeyboardNavProvider({ children }: { children: React.ReactNode })
     null,
   );
   const [helpOpen, setHelpOpen] = useState(false);
+  const [virtualScrollToIndex, setVirtualScrollToIndexRaw] = useState<
+    ((index: number) => void) | null
+  >(null);
 
   const setItems = useCallback((newItems: Item[]) => setItemsRaw(newItems), []);
+  const setVirtualScrollToIndex = useCallback(
+    (fn: ((index: number) => void) | null) => setVirtualScrollToIndexRaw(() => fn),
+    [],
+  );
 
   const value = useMemo(
     () => ({
@@ -53,8 +62,19 @@ export function KeyboardNavProvider({ children }: { children: React.ReactNode })
       setPendingFilterOpen,
       helpOpen,
       setHelpOpen,
+      setVirtualScrollToIndex,
+      virtualScrollToIndex,
     }),
-    [items, setItems, selectedItemId, editingItem, pendingFilterOpen, helpOpen],
+    [
+      items,
+      setItems,
+      selectedItemId,
+      editingItem,
+      pendingFilterOpen,
+      helpOpen,
+      setVirtualScrollToIndex,
+      virtualScrollToIndex,
+    ],
   );
 
   return (

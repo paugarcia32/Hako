@@ -28,6 +28,7 @@ export function useVimKeyboard() {
     setPendingFilterOpen,
     helpOpen,
     setHelpOpen,
+    virtualScrollToIndex,
   } = useKeyboardNav();
 
   const router = useRouter();
@@ -39,6 +40,7 @@ export function useVimKeyboard() {
   const selectedItemIdRef = useRef(selectedItemId);
   const pathnameRef = useRef(pathname);
   const helpOpenRef = useRef(helpOpen);
+  const virtualScrollToIndexRef = useRef(virtualScrollToIndex);
   const archiveRef = useRef(archive);
   const unarchiveRef = useRef(unarchive);
   const deleteItemRef = useRef(deleteItem);
@@ -55,6 +57,9 @@ export function useVimKeyboard() {
   useEffect(() => {
     helpOpenRef.current = helpOpen;
   }, [helpOpen]);
+  useEffect(() => {
+    virtualScrollToIndexRef.current = virtualScrollToIndex;
+  }, [virtualScrollToIndex]);
   useEffect(() => {
     archiveRef.current = archive;
   }, [archive]);
@@ -86,10 +91,15 @@ export function useVimKeyboard() {
 
     function scrollToItem(id: string) {
       const el = document.querySelector(`[data-item-id="${id}"]`) as HTMLElement | null;
-      if (!el) return;
-      el.style.scrollMarginTop = '80px';
-      el.style.scrollMarginBottom = '60px';
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (el) {
+        el.style.scrollMarginTop = '80px';
+        el.style.scrollMarginBottom = '60px';
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+      }
+      // Item not in DOM (virtualized) — scroll by index
+      const idx = itemsRef.current.findIndex((i) => i.id === id);
+      if (idx >= 0) virtualScrollToIndexRef.current?.(idx);
     }
 
     function navigateItems(direction: 1 | -1) {
