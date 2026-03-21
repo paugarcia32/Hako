@@ -19,6 +19,7 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-ki
 import type { CollectionSection, Item } from '@hako/types';
 import { getFaviconUrl, getHostname } from '@hako/utils';
 import { GlobeAltIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -32,8 +33,7 @@ function ItemDragPreview({ item }: { item: Item }) {
     <div className="flex h-10 items-center gap-3 rounded-lg border border-stone-200 bg-white px-2 opacity-95 shadow-xl dark:border-stone-700 dark:bg-stone-900">
       <div className="flex size-4 shrink-0 items-center justify-center">
         {favicon && !faviconError ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={favicon}
             alt=""
             width={16}

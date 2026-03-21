@@ -17,6 +17,7 @@ import {
   PencilSquareIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 import { forwardRef, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -43,13 +44,16 @@ function ItemHoverCard({ item, top, left }: HoverCardProps) {
     >
       {/* Thumbnail — only render if imageUrl exists AND hasn't errored */}
       {item.imageUrl && !imgError && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={item.imageUrl}
-          alt=""
-          className="h-28 w-full object-cover"
-          onError={() => setImgError(true)}
-        />
+        <div className="relative h-28 w-full">
+          <Image
+            src={item.imageUrl}
+            alt=""
+            fill
+            className="object-cover"
+            loading="lazy"
+            onError={() => setImgError(true)}
+          />
+        </div>
       )}
 
       <div className="p-3">
@@ -277,8 +281,7 @@ export const ItemRow = forwardRef<HTMLLIElement, ItemRowProps>(function ItemRow(
         {/* Favicon */}
         <div className="flex size-4 shrink-0 items-center justify-center">
           {favicon && !faviconError ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={favicon}
               alt=""
               width={16}

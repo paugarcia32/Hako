@@ -6,6 +6,7 @@ import { usePasteHandler } from '@/lib/use-paste-handler';
 import { COLLECTION_COLORS } from '@hako/types';
 import { getFaviconUrl, getHostname } from '@hako/utils';
 import { ArchiveBoxIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -296,8 +297,13 @@ export function BottomUrlBar({
                       {/* Favicon */}
                       <div className="flex size-4 shrink-0 items-center justify-center">
                         {favicon ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={favicon} alt="" className="size-4 rounded-sm" />
+                          <Image
+                            src={favicon}
+                            alt=""
+                            width={16}
+                            height={16}
+                            className="size-4 rounded-sm"
+                          />
                         ) : (
                           <GlobeAltIcon className="size-4 text-stone-400" />
                         )}

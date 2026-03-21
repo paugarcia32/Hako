@@ -7,6 +7,7 @@ import { getCollectionIcon } from '@/lib/collection-icons';
 import { COLLECTION_COLORS } from '@hako/types';
 import { getFaviconUrl, getHostname } from '@hako/utils';
 import { GlobeAltIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 import { useState } from 'react';
 
 interface ReadOnlyItemRowProps {
@@ -36,8 +37,7 @@ function ReadOnlyItemRow({ item }: ReadOnlyItemRowProps) {
       {/* Favicon */}
       <div className="flex size-4 shrink-0 items-center justify-center">
         {favicon && !faviconError ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={favicon}
             alt=""
             width={16}
