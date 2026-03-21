@@ -108,7 +108,11 @@
       "Bash(ls *.json)",
       "Bash(ls apps/api/*.json)",
       "Bash(git checkout:*)",
-      "Bash(pnpm format:*)"
+      "Bash(pnpm format:*)",
+      "Bash(pnpm db:migrate)",
+      "Bash(node -e \":*)",
+      "Bash(pnpm --filter @hako/api prisma migrate status)",
+      "Bash(pnpm --filter @hako/api test)"
     ]
   }
 }
