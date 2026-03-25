@@ -1,52 +1,44 @@
+import {
+  DribbbleScraperService,
+  GenericScraperService,
+  InstagramScraperService,
+  PinterestScraperService,
+  ScraperService,
+  ScraperUtilsService,
+  TikTokScraperService,
+  TwitterScraperService,
+  YoutubeScraperService,
+  appRouter,
+} from '@hako/trpc';
 import { Injectable, type NestMiddleware } from '@nestjs/common';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import type { NextFunction, Request, Response } from 'express';
-import { CollectionsRouter } from '../modules/collections/collections.router';
-import { ItemsRouter } from '../modules/items/items.router';
-import { SectionsRouter } from '../modules/sections/sections.router';
-import { UsersRouter } from '../modules/users/users.router';
-import { TrpcService } from './trpc.service';
-
-function createAppRouter(
-  trpc: TrpcService,
-  items: ItemsRouter,
-  collections: CollectionsRouter,
-  sections: SectionsRouter,
-  users: UsersRouter,
-) {
-  return trpc.mergeRouters(
-    trpc.router({ items: items.router }),
-    trpc.router({ collections: collections.router }),
-    trpc.router({ sections: sections.router }),
-    trpc.router({ users: users.router }),
-  );
-}
-
-export type AppRouter = ReturnType<typeof createAppRouter>;
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class TrpcMiddleware implements NestMiddleware {
   private readonly handler: ReturnType<typeof createExpressMiddleware>;
+  private readonly scraperService: ScraperService;
 
-  constructor(
-    private readonly trpc: TrpcService,
-    private readonly items: ItemsRouter,
-    private readonly collections: CollectionsRouter,
-    private readonly sections: SectionsRouter,
-    private readonly users: UsersRouter,
-  ) {
-    const appRouter = createAppRouter(
-      this.trpc,
-      this.items,
-      this.collections,
-      this.sections,
-      this.users,
-    );
+  constructor(private readonly prisma: PrismaService) {
+    const utils = new ScraperUtilsService();
+    this.scraperService = new ScraperService([
+      new TwitterScraperService(utils),
+      new PinterestScraperService(utils),
+      new YoutubeScraperService(utils),
+      new DribbbleScraperService(utils),
+      new TikTokScraperService(utils),
+      new InstagramScraperService(utils),
+      new GenericScraperService(utils),
+    ]);
+
     this.handler = createExpressMiddleware({
       router: appRouter,
       createContext: ({ req }) => ({
         userId: (req as Request & { userId?: string }).userId ?? '',
-        req,
+        prisma: this.prisma,
+        scraperService: this.scraperService,
+        req: { ip: req.ip ?? null, headers: req.headers },
       }),
     });
   }

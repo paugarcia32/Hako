@@ -8,11 +8,10 @@ Personal reading inbox. Save URLs, read later, organize in collections.
 |---|---|
 | Monorepo | Turborepo + pnpm workspaces |
 | Web | Next.js 15 (App Router) |
-| API | NestJS 10 |
-| End-to-end types | tRPC 11 |
+| API | NestJS 10 (thin HTTP adapter) |
+| Business logic | `@hako/trpc` — tRPC 11 + plain TypeScript services |
 | Auth | better-auth |
 | ORM | Prisma 5 + PostgreSQL |
-| Queue | BullMQ + Redis |
 | Linter / Formatter | Biome |
 
 ## Structure
@@ -23,19 +22,21 @@ hako/
 │   ├── web/          # Next.js — http://localhost:3000
 │   └── api/          # NestJS — http://localhost:3001
 ├── packages/
+│   ├── trpc/         # @hako/trpc — all business logic, tRPC routers and services
 │   ├── types/        # @hako/types — shared TypeScript types
-│   ├── ui/           # @hako/ui    — shared React components
+│   ├── utils/        # @hako/utils — shared utilities
 │   └── config/       # @hako/config — base tsconfig/biome
 ├── biome.json
-├── turbo.json
-└── docker-compose.yml
+└── turbo.json
 ```
+
+All domain logic (routers, services, scraper strategies) lives in `packages/trpc` as framework-agnostic TypeScript. `apps/api` is a thin NestJS adapter that mounts the tRPC handler and handles auth. See [`docs/architecture.md`](docs/architecture.md) for details.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org) >= 22 (use `nvm use` to apply the version in `.nvmrc`)
+- [Node.js](https://nodejs.org) >= 22
 - [pnpm](https://pnpm.io) >= 9 — `npm install -g pnpm`
-- PostgreSQL and Redis (see options below)
+- PostgreSQL (see options below)
 
 ### Infrastructure options
 
@@ -47,13 +48,11 @@ docker compose up -d
 **Option B — Cloud (no local install needed)**
 
 1. Create a free PostgreSQL DB at [neon.tech](https://neon.tech)
-2. Create a free Redis instance at [upstash.com](https://upstash.com)
-3. Copy the connection strings into `apps/api/.env`
+2. Copy the connection string into `apps/api/.env`
 
 **Option C — Native (Windows)**
 ```powershell
 winget install PostgreSQL.PostgreSQL
-winget install Redis.Redis
 ```
 
 ## Getting started
@@ -65,12 +64,10 @@ pnpm install
 # 2. Set up environment variables
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
-# Edit both files with your DB and Redis credentials
+# Edit both files with your DB credentials
 
 # 3. Push the database schema
-cd apps/api
-pnpm db:push
-cd ../..
+cd apps/api && pnpm db:push && cd ../..
 
 # 4. Start everything
 pnpm dev
@@ -78,7 +75,6 @@ pnpm dev
 
 - Web: http://localhost:3000
 - API: http://localhost:3001
-- tRPC panel (if enabled): http://localhost:3001/trpc
 
 ## Scripts
 
@@ -86,38 +82,41 @@ pnpm dev
 
 ```bash
 pnpm dev          # Start all apps in watch mode
-pnpm build        # Build all apps
+pnpm build        # Build all packages and apps
 pnpm typecheck    # tsc --noEmit across the monorepo
 pnpm lint         # Biome lint check
 pnpm format       # Biome format (writes changes)
 pnpm test         # Run all test suites
 ```
 
-### API only (`apps/api`)
+### `packages/trpc`
 
 ```bash
-pnpm dev          # NestJS watch mode
-pnpm build        # Compile to dist/
-pnpm start        # Run compiled dist/main.js
-pnpm typecheck    # Type check without emitting
-
-pnpm test           # Run tests (requires hako_test DB)
-pnpm test:watch     # Watch mode
-pnpm test:coverage  # With coverage report
-
-pnpm db:push           # Push schema to DB (dev, no migration files)
-pnpm db:migrate        # Create and apply a migration
-pnpm db:migrate:test   # Push schema to test DB (hako_test)
-pnpm db:studio         # Open Prisma Studio at http://localhost:5555
+pnpm --filter @hako/trpc test              # Run tests (requires .env.test)
+pnpm --filter @hako/trpc test:watch        # Watch mode
+pnpm --filter @hako/trpc test:coverage     # With coverage report
+pnpm --filter @hako/trpc build             # Compile to dist/
 ```
 
-### Web only (`apps/web`)
+### `apps/api`
 
 ```bash
-pnpm dev          # Next.js with Turbopack
-pnpm build        # Production build
-pnpm start        # Serve production build
-pnpm typecheck    # Type check without emitting
+pnpm --filter @hako/api dev          # NestJS watch mode
+pnpm --filter @hako/api build        # Compile to dist/
+pnpm --filter @hako/api typecheck    # Type check without emitting
+
+pnpm --filter @hako/api db:push           # Push schema to DB (dev)
+pnpm --filter @hako/api db:migrate        # Create and apply a migration
+pnpm --filter @hako/api db:migrate:test   # Push schema to test DB
+pnpm --filter @hako/api db:studio         # Prisma Studio at http://localhost:5555
+```
+
+### `apps/web`
+
+```bash
+pnpm --filter @hako/web dev          # Next.js with Turbopack
+pnpm --filter @hako/web build        # Production build
+pnpm --filter @hako/web typecheck    # Type check without emitting
 ```
 
 ## Database
@@ -126,57 +125,58 @@ Schema is defined in `apps/api/prisma/schema.prisma`.
 
 ```bash
 # Iterate on schema during development (no migration files)
-cd apps/api && pnpm db:push
+pnpm --filter @hako/api db:push
 
 # Create a named migration (staging/production)
-cd apps/api && pnpm db:migrate
+pnpm --filter @hako/api db:migrate
 
 # Explore data visually
-cd apps/api && pnpm db:studio
+pnpm --filter @hako/api db:studio
 ```
 
 ## Tests
 
-### API (`apps/api`)
+Tests live in `packages/trpc/src/` alongside the source files they test (`*.spec.ts`). They use **Vitest** with a real PostgreSQL test database — no mocks for DB operations.
 
-Tests use **Vitest** with a real PostgreSQL test database. Test files live next to the source files they test (`*.spec.ts`).
-
-#### First-time setup
+### First-time setup
 
 Create the test database and push the schema:
 
 ```bash
-cd apps/api
-pnpm db:migrate:test
+cd apps/api && pnpm db:migrate:test
 ```
 
-This creates `hako_test` on your local PostgreSQL instance and applies the schema. Requires `apps/api/.env.test` to be configured (credentials default to `postgres:password@localhost:5432`).
+Requires `apps/api/.env.test` to be configured (defaults to `postgres:password@localhost:5432/hako_test`).
 
-#### Running tests
+### Running tests
 
 ```bash
 # From the repo root — runs all test suites via Turborepo
 pnpm test
 
-# From apps/api — run API tests only
-cd apps/api
-pnpm test              # Run once (CI mode)
-pnpm test:watch        # Watch mode (development)
-pnpm test:coverage     # Run with coverage report
+# trpc package only
+pnpm --filter @hako/trpc test          # Run once (CI mode)
+pnpm --filter @hako/trpc test:watch    # Watch mode
+pnpm --filter @hako/trpc test:coverage # With coverage report
 ```
 
-#### What's tested
+### What's tested
 
 | File | Type | Description |
 |---|---|---|
-| `scraper.service.spec.ts` | Unit | URL type detection logic |
-| `session.middleware.spec.ts` | Unit (mocked) | Session extraction middleware |
-| `items.service.spec.ts` | Integration | All ItemsService DB operations |
-| `collections.service.spec.ts` | Integration | All CollectionsService DB operations |
-| `items.router.spec.ts` | tRPC | Items procedures — auth, validation, business logic |
-| `collections.router.spec.ts` | tRPC | Collections procedures — auth, public routes, validation |
+| `src/trpc.spec.ts` | Unit | Rate limiting middleware |
+| `src/services/items.service.spec.ts` | Integration | All ItemsService DB operations |
+| `src/services/collections.service.spec.ts` | Integration | CollectionsService DB operations |
+| `src/services/sections.service.spec.ts` | Integration | SectionsService DB operations |
+| `src/services/users.service.spec.ts` | Integration | UsersService DB operations |
+| `src/services/scraper.service.spec.ts` | Unit | Scraper orchestrator (strategy routing) |
+| `src/services/strategies/*.spec.ts` | Unit | Per-platform scraper strategies |
+| `src/routers/items.router.spec.ts` | tRPC | Items procedures — auth, validation, business logic |
+| `src/routers/collections.router.spec.ts` | tRPC | Collections procedures — auth, public routes |
+| `src/routers/sections.router.spec.ts` | tRPC | Sections procedures — auth, ordering |
+| `src/routers/users.router.spec.ts` | tRPC | Users procedures — auth, account deletion |
 
-tRPC procedures are tested using `router.createCaller(ctx)` — no HTTP server needed.
+tRPC procedures are tested using `appRouter.createCaller(ctx)` — no HTTP server needed.
 
 ## Environment variables
 
@@ -185,12 +185,14 @@ tRPC procedures are tested using `router.createCaller(ctx)` — no HTTP server n
 | Variable | Description |
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string |
-| `REDIS_URL` | Redis connection string |
 | `PORT` | API port (default `3001`) |
 | `BETTER_AUTH_SECRET` | Random secret — generate with `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | Full URL of the API (e.g. `http://localhost:3001`) |
-| `GITHUB_CLIENT_ID` | GitHub OAuth (optional in v1) |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth (optional in v1) |
+| `WEB_ORIGIN` | Web app origin for CORS (e.g. `http://localhost:3000`) |
+| `GITHUB_CLIENT_ID` | GitHub OAuth (optional) |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth (optional) |
+| `GOOGLE_CLIENT_ID` | Google OAuth (optional) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth (optional) |
 
 ### `apps/web/.env.local`
 
@@ -202,17 +204,17 @@ tRPC procedures are tested using `router.createCaller(ctx)` — no HTTP server n
 
 ## Adding a new tRPC procedure
 
-1. Add the method to the service (`apps/api/src/modules/<module>/<module>.service.ts`)
-2. Expose it in the router (`apps/api/src/modules/<module>/<module>.router.ts`)
-3. The type is automatically available in the web via `AppRouter`
+1. Add the method to the service in `packages/trpc/src/services/<domain>.service.ts`
+2. Expose it in the router in `packages/trpc/src/routers/<domain>.router.ts`
+3. The type is automatically available in the web via `import type { AppRouter } from '@hako/trpc'`
 
 ## Code style
 
 Biome handles both linting and formatting. No ESLint, no Prettier.
 
 ```bash
-pnpm lint          # Check for issues
-pnpm format        # Fix formatting
+pnpm lint      # Check for issues
+pnpm format    # Fix formatting
 ```
 
-Configuration: `biome.json` at the root. Apps/packages can extend it with a local `biome.json`.
+Configuration: `biome.json` at the root.

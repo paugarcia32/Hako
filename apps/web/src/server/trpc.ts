@@ -1,5 +1,5 @@
+import type { AppRouter } from '@hako/trpc';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import type { AppRouter } from '../../../api/src/trpc/trpc.middleware';
 
 export type { AppRouter };
 

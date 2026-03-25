@@ -14,17 +14,21 @@ pnpm build            # Build all apps via Turborepo
 pnpm typecheck        # Run tsc --noEmit across all apps
 ```
 
-### Per-app
+### Per-app / per-package
 
 ```bash
-# API
-pnpm --filter @hako/api dev
-pnpm --filter @hako/api test          # Vitest (requires .env.test)
-pnpm --filter @hako/api test:watch    # Watch mode
-pnpm --filter @hako/api test:coverage
+# tRPC package (business logic + tests)
+pnpm --filter @hako/trpc test          # Vitest (requires apps/api/.env.test)
+pnpm --filter @hako/trpc test:watch    # Watch mode
+pnpm --filter @hako/trpc test:coverage
+pnpm --filter @hako/trpc build         # Compile to dist/ (needed before api dev)
 
 # Run a single test file
-pnpm --filter @hako/api test -- path/to/file.spec.ts
+pnpm --filter @hako/trpc test -- path/to/file.spec.ts
+
+# API
+pnpm --filter @hako/api dev
+pnpm --filter @hako/api build
 
 # Web
 pnpm --filter @hako/web dev
@@ -58,18 +62,19 @@ Requires `.env` in `apps/api/` — copy from `.env.example`. Test DB requires `.
 
 Full reference: [`docs/architecture.md`](docs/architecture.md)
 
-**Monorepo**: pnpm workspaces + Turborepo. Three shared packages:
+**Monorepo**: pnpm workspaces + Turborepo. Four shared packages:
+- `@hako/trpc` — all business logic: tRPC routers, services, scraper strategies (framework-agnostic TypeScript)
 - `@hako/types` — shared TypeScript types (imported by both apps)
 - `@hako/utils` — shared utility functions
 - `@hako/config` — shared tsconfig and tool configs (`base`, `nextjs`, `nestjs`)
 
-**API** (`apps/api`): NestJS + tRPC 11 + Prisma 5 + PostgreSQL + better-auth. All API surface is tRPC — no REST endpoints except `/api/auth/*` (handled by better-auth).
+**API** (`apps/api`): Thin NestJS HTTP adapter. Mounts `@hako/trpc`'s `appRouter` via `createExpressMiddleware`, handles auth with better-auth. No domain logic lives here. All API surface is tRPC — no REST endpoints except `/api/auth/*`.
 
-**Web** (`apps/web`): Next.js 15 App Router + React 19 + tRPC client + React Query 5 + Tailwind 4. The web app imports `AppRouter` type directly from API source (`apps/api/src/trpc/trpc.middleware.ts`) — types only, no runtime coupling.
+**Web** (`apps/web`): Next.js 15 App Router + React 19 + tRPC client + React Query 5 + Tailwind 4. Imports `AppRouter` type from `@hako/trpc` — types only, no runtime coupling.
 
 ### Adding a new feature
 
-1. **Backend**: Create a new procedure in the relevant router (or a new module if the domain is distinct). Use `protectedProcedure` for authenticated routes. Validate input with Zod. Add ownership checks in the service (`where: { id, userId }`).
+1. **Backend**: Add the method to the service in `packages/trpc/src/services/<domain>.service.ts`. Expose it in the router in `packages/trpc/src/routers/<domain>.router.ts`. Use `protectedProcedure` for authenticated routes. Validate input with Zod. Add ownership checks in the service (`where: { id, userId }`).
 2. **Frontend**: Call via `trpc.<router>.<procedure>.useQuery/useMutation`. Invalidate relevant queries in mutation `onSuccess`.
 3. **Types**: If shared between apps, add to `packages/types/src/index.ts`.
 
@@ -88,12 +93,16 @@ Sessions are cookie-based (better-auth). The `userId` is injected into tRPC cont
 - **No premature abstraction**: three similar lines are better than a wrong abstraction. Only extract when there are 3+ real usages.
 - Keep functions small and focused. If a function needs a comment to explain what it does, it should probably be split or renamed.
 
-### Backend (NestJS)
+### `packages/trpc` (business logic)
 
-- One NestJS module per domain (items, collections, sections, users, scraper, auth).
 - Services contain business logic; routers contain only input validation and service delegation.
-- All DB access goes through `PrismaService` — never instantiate Prisma directly.
-- Add tests for scraper strategies and any non-trivial service logic. Tests use Vitest and live alongside source files as `*.spec.ts`.
+- All DB access goes through the `PrismaClient` instance passed via context — never instantiate Prisma directly inside a service.
+- Add tests for scraper strategies and any non-trivial service logic. Tests use Vitest and live alongside source files as `*.spec.ts` inside `packages/trpc/src/`.
+
+### `apps/api` (NestJS HTTP adapter)
+
+- Only three NestJS modules: `AppModule`, `AuthModule`, `TrpcModule`.
+- No domain logic here — `TrpcMiddleware` is the only file that touches tRPC, and it just builds the context and mounts the handler.
 
 ### Frontend (React / Next.js)
 

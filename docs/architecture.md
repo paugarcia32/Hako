@@ -5,9 +5,10 @@
 ```
 hako/
 ├── apps/
-│   ├── api/          # NestJS backend (@hako/api)
+│   ├── api/          # NestJS HTTP adapter (@hako/api)
 │   └── web/          # Next.js 15 frontend (@hako/web)
 ├── packages/
+│   ├── trpc/         # Business logic + tRPC routers (@hako/trpc)
 │   ├── types/        # Shared TypeScript types (@hako/types)
 │   ├── utils/        # Shared utilities (@hako/utils)
 │   └── config/       # Shared tsconfig and tool configs (@hako/config)
@@ -21,9 +22,66 @@ Managed with **pnpm workspaces** + **Turborepo**. Run all apps with `pnpm dev` f
 
 ---
 
+## `packages/trpc` — business logic
+
+All domain logic lives here as framework-agnostic TypeScript. No NestJS decorators, no Express — just plain classes and tRPC routers.
+
+```
+src/
+├── index.ts              # Public exports (AppRouter, createCaller, context types)
+├── trpc.ts               # initTRPC, protectedProcedure, publicProcedure, rate limiters
+├── context.ts            # Context type: { userId, prisma, scraperService, req }
+├── routers/
+│   ├── _app.ts           # Merges all routers → AppRouter
+│   ├── items.router.ts
+│   ├── collections.router.ts
+│   ├── sections.router.ts
+│   └── users.router.ts
+└── services/
+    ├── items.service.ts
+    ├── collections.service.ts
+    ├── sections.service.ts
+    ├── users.service.ts
+    ├── scraper.service.ts        # Orchestrator (strategy pattern)
+    ├── scraper-utils.service.ts  # Shared fetch + HTML parsing utilities
+    └── strategies/               # One file per platform
+        ├── generic.scraper.ts
+        ├── youtube.scraper.ts
+        ├── twitter.scraper.ts
+        ├── pinterest.scraper.ts
+        ├── dribbble.scraper.ts
+        ├── tiktok.scraper.ts
+        └── instagram.scraper.ts
+```
+
+### Why a separate package?
+
+- **Workers**: `import { createCaller } from '@hako/trpc'` lets a background worker call procedures directly, without an HTTP round-trip.
+- **React Native / browser extension**: `import type { AppRouter } from '@hako/trpc'` gives a fully type-safe client.
+- **Tests**: services and routers are testable without spinning up NestJS.
+
+### tRPC procedures
+
+- `protectedProcedure` — requires an authenticated session (`userId` in context). Throws `UNAUTHORIZED` if absent.
+- `publicProcedure` — unauthenticated (only `collections.byShareToken`).
+
+All inputs validated with Zod. All service methods verify `userId` ownership before mutations.
+
+### Scraper
+
+When an item is created, `ScraperService` iterates its strategy list in order, calling `canHandle(url)` on each until one matches, then delegates to `scrape(url)`. Strategies implement `IScraper`: `canHandle(url): boolean` + `scrape(url): Promise<ScrapeResult>`. Each request is capped at 10s timeout / 500 KB response.
+
+---
+
 ## Backend — `apps/api`
 
-**Stack**: NestJS 10 + tRPC 11 + Prisma 5 + PostgreSQL + better-auth 1
+**Stack**: NestJS 10 + Express + Prisma 5 + PostgreSQL + better-auth 1
+
+`apps/api` is a thin HTTP adapter. It does not contain business logic. Its only responsibilities are:
+
+1. Expose `/api/auth/*` via better-auth
+2. Mount the tRPC handler from `@hako/trpc` at `/trpc`
+3. Inject `PrismaService` and `ScraperService` into the tRPC context per request
 
 ### Request flow
 
@@ -33,35 +91,19 @@ HTTP request
   → SessionMiddleware  (extracts userId from better-auth session cookie)
   → ThrottlerGuard     (60 req/min in prod, per IP)
   → /api/auth/*        → AuthMiddleware → better-auth handler
-  → /trpc/*            → TrpcMiddleware → tRPC router
+  → /trpc/*            → TrpcMiddleware → @hako/trpc appRouter
 ```
 
 ### Module layout
 
 ```
 src/
-├── modules/
-│   ├── auth/         # better-auth init, session & auth middlewares
-│   ├── items/        # Items CRUD + scraping trigger
-│   ├── collections/  # Collections + sections + sharing
-│   ├── sections/     # Section ordering (dnd-kit backend)
-│   ├── users/        # Profile update, account deletion
-│   └── scraper/      # URL metadata extraction (strategy pattern)
-│       └── strategies/  # generic, youtube, twitter, pinterest, dribbble
-├── prisma/           # PrismaService (global module)
-└── trpc/             # tRPC init, AppRouter assembly, Express middleware
+├── auth/             # better-auth init, SessionMiddleware, AuthMiddleware
+├── prisma/           # PrismaService (global NestJS module)
+└── trpc/             # HTTP adapter only
+    ├── trpc.middleware.ts   # Instantiates ScraperService, builds context, mounts createExpressMiddleware
+    └── trpc.module.ts       # Registers TrpcMiddleware on /trpc
 ```
-
-### tRPC procedures
-
-- `protectedProcedure` — requires authenticated session (`userId` in context)
-- `publicProcedure` — unauthenticated (only `collections.byShareToken`)
-
-All inputs validated with Zod. All service methods verify `userId` ownership before mutations.
-
-### Scraper
-
-When an item is created, `ScraperService` dispatches to the appropriate strategy by hostname. Strategies implement a common interface: fetch metadata, return normalized `ItemMetadata`. Each request is capped at 10s timeout / 500KB response.
 
 ### Database
 
@@ -87,7 +129,7 @@ Page component
   → Backend
 ```
 
-The tRPC client is typed end-to-end: `apps/web/src/server/trpc.ts` imports `AppRouter` directly from the API source (not a generated artifact). This import is a cross-app reference — it only carries types, no runtime code.
+The tRPC client is typed end-to-end: `apps/web/src/server/trpc.ts` imports `AppRouter` from `@hako/trpc`. This import carries only types — no runtime code from the package runs in the browser.
 
 ### App structure
 
