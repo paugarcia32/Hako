@@ -1,7 +1,7 @@
 'use client';
 
 import { useVimKeyboard } from '@/hooks/use-vim-keyboard';
-import type { Item } from '@hako/types';
+import type { Item } from '@hako/shared';
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 interface KeyboardNavContextValue {

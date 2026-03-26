@@ -5,9 +5,9 @@ import { EditItemModal } from '@/components/edit-item-modal';
 import { useKeyboardNav } from '@/contexts/keyboard-nav';
 import { useItemActions } from '@/hooks/use-item-actions';
 import { getCollectionIcon } from '@/lib/collection-icons';
-import type { Item } from '@hako/types';
-import { COLLECTION_COLORS } from '@hako/types';
-import { getFaviconUrl, getHostname } from '@hako/utils';
+import type { Item } from '@hako/shared';
+import { COLLECTION_COLORS } from '@hako/shared';
+import { getFaviconUrl, getHostname } from '@hako/shared';
 import {
   ArchiveBoxArrowDownIcon,
   ArchiveBoxIcon,

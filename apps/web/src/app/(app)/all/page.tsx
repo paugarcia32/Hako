@@ -11,7 +11,7 @@ import { useInfiniteItems } from '@/hooks/use-infinite-items';
 import { useItemFiltering } from '@/hooks/use-item-filtering';
 import { useItemGrouping } from '@/hooks/use-item-grouping';
 import { buildGroups } from '@/lib/grouping-utils';
-import type { Item } from '@hako/types';
+import type { Item } from '@hako/shared';
 import { ChevronRightIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 

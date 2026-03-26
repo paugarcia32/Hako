@@ -16,13 +16,12 @@
   },
   "dependencies": {
     "@hako/db": "workspace:*",
-    "@hako/types": "workspace:*",
+    "@hako/shared": "workspace:*",
     "@trpc/server": "^11.0.0",
     "rate-limiter-flexible": "^5.0.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@hako/config": "workspace:*",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^4.1.0",
     "dotenv-cli": "^11.0.0",

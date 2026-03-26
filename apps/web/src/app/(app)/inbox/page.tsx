@@ -8,7 +8,7 @@ import { VirtualItemList } from '@/components/virtual-item-list';
 import { useKeyboardNav } from '@/contexts/keyboard-nav';
 import { useInfiniteItems } from '@/hooks/use-infinite-items';
 import { useItemFiltering } from '@/hooks/use-item-filtering';
-import type { Item } from '@hako/types';
+import type { Item } from '@hako/shared';
 import { InboxArrowDownIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 

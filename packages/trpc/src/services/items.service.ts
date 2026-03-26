@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@hako/db';
-import type { CreateItemInput, UpdateItemInput } from '@hako/types';
+import type { CreateItemInput, UpdateItemInput } from '@hako/shared';
 import { Logger } from '../logger';
 import type { ScraperService } from './scraper.service';
 

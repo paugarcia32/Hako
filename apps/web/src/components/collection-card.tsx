@@ -1,4 +1,4 @@
-import type { Collection } from '@hako/types';
+import type { Collection } from '@hako/shared';
 
 type CollectionCardProps = {
   collection: Collection;

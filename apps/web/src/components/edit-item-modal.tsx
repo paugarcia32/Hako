@@ -2,8 +2,8 @@
 
 import { getCollectionIcon } from '@/lib/collection-icons';
 import { trpc } from '@/lib/trpc';
-import type { ContentType, Item } from '@hako/types';
-import { COLLECTION_COLORS } from '@hako/types';
+import type { ContentType, Item } from '@hako/shared';
+import { COLLECTION_COLORS } from '@hako/shared';
 import { CheckIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 

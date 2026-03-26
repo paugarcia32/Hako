@@ -3,8 +3,8 @@
 import { getCollectionIcon } from '@/lib/collection-icons';
 import { trpc } from '@/lib/trpc';
 import { useClickOutside } from '@/lib/use-click-outside';
-import type { Item } from '@hako/types';
-import { COLLECTION_COLORS } from '@hako/types';
+import type { Item } from '@hako/shared';
+import { COLLECTION_COLORS } from '@hako/shared';
 import { CheckIcon } from '@heroicons/react/24/outline';
 import { useRef } from 'react';
 

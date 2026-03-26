@@ -1,7 +1,7 @@
 'use client';
 
 import { useSortable } from '@dnd-kit/sortable';
-import type { CollectionSection } from '@hako/types';
+import type { CollectionSection } from '@hako/shared';
 import { Bars2Icon, ChevronRightIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 

@@ -2,7 +2,7 @@
 
 import type { SortOption, TypeFilter } from '@/components/filter-bar';
 import { trpc } from '@/lib/trpc';
-import type { Item } from '@hako/types';
+import type { Item } from '@hako/shared';
 import { useMemo } from 'react';
 
 type UseInfiniteItemsParams = {

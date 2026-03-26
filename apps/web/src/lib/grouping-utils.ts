@@ -1,5 +1,5 @@
 import type { GroupBy } from '@/components/filter-bar';
-import type { Item } from '@hako/types';
+import type { Item } from '@hako/shared';
 
 export type Group = { key: string; label: string; items: Item[] };
 

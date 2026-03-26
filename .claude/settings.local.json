@@ -149,7 +149,12 @@
       "Bash(pnpm --filter @hako/trpc test)",
       "Bash(find /c/Users/Pau/dev/hako/packages/trpc -name global*setup*)",
       "Bash(pnpm --filter @hako/server build)",
-      "Bash(pnpm --filter @hako/server typecheck)"
+      "Bash(pnpm --filter @hako/server typecheck)",
+      "Bash(xargs sed:*)",
+      "Bash(find . -maxdepth 5 -path */node_modules/@hako -not -path */.turbo/*)",
+      "Bash(sed -i 's|\"\"@hako/config/base\"\"|\"\"@hako/shared/config/base\"\"|g' packages/trpc/tsconfig.json packages/server/tsconfig.json packages/db/tsconfig.json)",
+      "Bash(sed -i 's|\"\"@hako/config/nextjs\"\"|\"\"@hako/shared/config/nextjs\"\"|g' apps/web/tsconfig.json apps/landing/tsconfig.json)",
+      "Bash(find node_modules/.pnpm -name *oxide*win32*)"
     ]
   }
 }

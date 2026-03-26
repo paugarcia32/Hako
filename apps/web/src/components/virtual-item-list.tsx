@@ -2,7 +2,7 @@
 
 import { ItemRow } from '@/components/item-row';
 import { useKeyboardNav } from '@/contexts/keyboard-nav';
-import type { Item } from '@hako/types';
+import type { Item } from '@hako/shared';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useEffect, useRef } from 'react';
 

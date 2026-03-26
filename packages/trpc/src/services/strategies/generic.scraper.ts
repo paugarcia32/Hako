@@ -1,4 +1,4 @@
-import type { ContentType } from '@hako/types';
+import type { ContentType } from '@hako/shared';
 import { Logger } from '../../logger';
 import type { ScraperUtilsService } from '../scraper-utils.service';
 import { type IScraper, type ScrapeResult, emptyResult } from '../scraper.interface';

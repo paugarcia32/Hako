@@ -42,9 +42,9 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1
     devDependencies:
-      '@hako/config':
+      '@hako/shared':
         specifier: workspace:*
-        version: link:../../packages/config
+        version: link:../../packages/shared
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.15
@@ -69,15 +69,12 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.2.4)
+      '@hako/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@hako/trpc':
         specifier: workspace:*
         version: link:../../packages/trpc
-      '@hako/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@hako/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
       '@heroicons/react':
         specifier: ^2.2.0
         version: 2.2.0(react@19.2.4)
@@ -121,9 +118,6 @@ importers:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
-      '@hako/config':
-        specifier: workspace:*
-        version: link:../../packages/config
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.15
@@ -140,17 +134,15 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
-  packages/config: {}
-
   packages/db:
     dependencies:
       '@prisma/client':
         specifier: ^5.0.0
         version: 5.22.0(prisma@5.22.0)
     devDependencies:
-      '@hako/config':
+      '@hako/shared':
         specifier: workspace:*
-        version: link:../config
+        version: link:../shared
       dotenv-cli:
         specifier: ^11.0.0
         version: 11.0.0
@@ -191,9 +183,9 @@ importers:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
-      '@hako/config':
+      '@hako/shared':
         specifier: workspace:*
-        version: link:../config
+        version: link:../shared
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.15
@@ -210,14 +202,20 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  packages/shared:
+    devDependencies:
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
   packages/trpc:
     dependencies:
       '@hako/db':
         specifier: workspace:*
         version: link:../db
-      '@hako/types':
+      '@hako/shared':
         specifier: workspace:*
-        version: link:../types
+        version: link:../shared
       '@trpc/server':
         specifier: ^11.0.0
         version: 11.13.4(typescript@5.9.3)
@@ -228,9 +226,6 @@ importers:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
-      '@hako/config':
-        specifier: workspace:*
-        version: link:../config
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.15
@@ -246,24 +241,6 @@ importers:
       vitest:
         specifier: ^4.1.0
         version: 4.1.0(@types/node@22.19.15)(vite@8.0.0(@types/node@22.19.15)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0))
-
-  packages/types:
-    devDependencies:
-      '@hako/config':
-        specifier: workspace:*
-        version: link:../config
-      typescript:
-        specifier: ^5.5.0
-        version: 5.9.3
-
-  packages/utils:
-    devDependencies:
-      '@hako/config':
-        specifier: workspace:*
-        version: link:../config
-      typescript:
-        specifier: ^5.5.0
-        version: 5.9.3
 
 packages:
 

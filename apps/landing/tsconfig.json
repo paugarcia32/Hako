@@ -1,5 +1,5 @@
 {
-  "extends": "@hako/config/nextjs",
+  "extends": "@hako/shared/config/nextjs",
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",

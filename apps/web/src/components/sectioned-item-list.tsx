@@ -16,8 +16,8 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import type { CollectionSection, Item } from '@hako/types';
-import { getFaviconUrl, getHostname } from '@hako/utils';
+import type { CollectionSection, Item } from '@hako/shared';
+import { getFaviconUrl, getHostname } from '@hako/shared';
 import { GlobeAltIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import React, { useState } from 'react';

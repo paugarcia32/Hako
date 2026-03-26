@@ -1,5 +1,5 @@
 {
-  "extends": "@hako/config/base",
+  "extends": "@hako/shared/config/base",
   "compilerOptions": {
     "outDir": "./dist"
   },

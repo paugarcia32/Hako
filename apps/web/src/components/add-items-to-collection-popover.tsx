@@ -2,7 +2,7 @@
 
 import { trpc } from '@/lib/trpc';
 import { useClickOutside } from '@/lib/use-click-outside';
-import { getHostname } from '@hako/utils';
+import { getHostname } from '@hako/shared';
 import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useRef, useState } from 'react';
 

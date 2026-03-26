@@ -3,8 +3,8 @@
 import { getCollectionIcon } from '@/lib/collection-icons';
 import { trpc } from '@/lib/trpc';
 import { usePasteHandler } from '@/lib/use-paste-handler';
-import { COLLECTION_COLORS } from '@hako/types';
-import { getFaviconUrl, getHostname } from '@hako/utils';
+import { COLLECTION_COLORS } from '@hako/shared';
+import { getFaviconUrl, getHostname } from '@hako/shared';
 import { ArchiveBoxIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';

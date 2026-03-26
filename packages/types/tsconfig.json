@@ -1,5 +1,0 @@
-{
-  "extends": "@hako/config/base",
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
-}

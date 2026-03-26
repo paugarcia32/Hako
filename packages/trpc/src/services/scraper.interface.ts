@@ -1,4 +1,4 @@
-import type { ContentType } from '@hako/types';
+import type { ContentType } from '@hako/shared';
 
 export type ScrapeResult = {
   title: string | null;
