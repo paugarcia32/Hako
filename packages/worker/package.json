@@ -1,0 +1,24 @@
+{
+  "name": "@hako/worker",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --format cjs --dts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@hako/db": "workspace:*",
+    "@hako/shared": "workspace:*",
+    "@hako/trpc": "workspace:*",
+    "bullmq": "^5.0.0",
+    "dotenv": "^16.4.0",
+    "ioredis": "^5.4.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.0"
+  }
+}

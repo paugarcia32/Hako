@@ -1,0 +1,7 @@
+{
+  "extends": "@hako/shared/config/base",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": ["src"]
+}

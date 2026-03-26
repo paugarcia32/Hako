@@ -163,7 +163,21 @@
       "Bash(mkdir -p \"C:\\\\Users\\\\Pau\\\\dev\\\\hako\\\\docs\\\\improvements\\\\phase-1\")",
       "Bash(mkdir -p /c/Users/Pau/dev/hako/docs/improvements/phase-1)",
       "Bash(node -e \"const io = require\\(''C:/Users/Pau/dev/hako/node_modules/ioredis''\\); console.log\\(Object.keys\\(io\\).slice\\(0,10\\)\\)\")",
-      "Bash(ls C:/Users/Pau/dev/hako/node_modules/.pnpm/ioredis*/node_modules/ioredis/built/index.d.ts)"
+      "Bash(ls C:/Users/Pau/dev/hako/node_modules/.pnpm/ioredis*/node_modules/ioredis/built/index.d.ts)",
+      "Bash(pnpm --filter @hako/worker build)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(find C:UsersPaudevhakopackagesshared -name queues.* -type f)",
+      "Bash(grep -r \"from ''@hako/shared/queues\" \"C:\\\\Users\\\\Pau\\\\dev\\\\hako\" --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(node --input-type=module -e \"import\\(''@hako/shared/queues''\\).then\\(m => console.log\\(''Exports:'', Object.keys\\(m\\)\\)\\).catch\\(e => console.error\\(''Error:'', e.message\\)\\)\")",
+      "Bash(node --import tsx/esm --input-type=module -e \"import\\(''@hako/shared/queues''\\).then\\(m => console.log\\(''Exports:'', Object.keys\\(m\\)\\)\\).catch\\(e => console.error\\(''Error:'', e.message, e.code\\)\\)\")",
+      "Bash(node --import tsx/esm --input-type=module -e \"import\\(''@hako/shared''\\).then\\(m => console.log\\(''Exports:'', Object.keys\\(m\\)\\)\\).catch\\(e => console.error\\(''Error:'', e.message\\)\\)\")",
+      "Bash(node --import tsx/esm --input-type=module -e \"import\\(''@hako/shared/queues''\\).then\\(m => { console.log\\(''Exports:'', Object.keys\\(m\\)\\); console.log\\(''QUEUES:'', m.QUEUES\\); }\\).catch\\(e => { console.error\\(''Error message:'', e.message\\); console.error\\(''Error code:'', e.code\\); console.error\\(''Full stack:'', e.stack.split\\(''\\\\n''\\).slice\\(0,5\\).join\\(''\\\\n''\\)\\); }\\)\")",
+      "Bash(node -e \"console.log\\(require.resolve\\(''@hako/shared/queues''\\)\\)\")",
+      "Bash(node --import tsx/esm --trace-warnings --input-type=module -e \"await import\\(''''@hako/shared/queues''''\\)\")",
+      "Bash(find C:UsersPaudevhakopackagesshared -name *.js -o -name *.js.map)",
+      "Bash(node --import tsx/esm --input-type=module -e \"import\\(''../shared/src/queues.ts''\\).then\\(m => console.log\\(''Exports:'', Object.keys\\(m\\)\\)\\).catch\\(e => console.error\\(''Error:'', e.message\\)\\)\")",
+      "Bash(node --import tsx/esm --input-type=module -e \"import\\(''./src/queues.ts''\\).then\\(m => console.log\\(''Exports:'', Object.keys\\(m\\)\\)\\).catch\\(e => console.error\\(''Error:'', e.message\\)\\)\")"
     ]
   }
 }
