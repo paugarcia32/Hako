@@ -3,6 +3,7 @@
 import type { SortOption, TypeFilter } from '@/components/filter-bar';
 import { trpc } from '@/lib/trpc';
 import type { Item } from '@hako/shared';
+import { keepPreviousData } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 type UseInfiniteItemsParams = {
@@ -47,7 +48,7 @@ export function useInfiniteItems({
     {
       initialCursor: undefined,
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-      ...(usePlaceholderData ? { placeholderData: (prev: unknown) => prev } : {}),
+      ...(usePlaceholderData ? { placeholderData: keepPreviousData } : {}),
       ...(refetchInterval !== undefined ? { refetchInterval } : {}),
     },
   );

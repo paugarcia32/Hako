@@ -34,7 +34,7 @@ export default function AllPage() {
     fetchNextPage,
     refetch,
   } = useInfiniteItems({
-    includeArchived: showArchived || undefined,
+    ...(showArchived ? { includeArchived: true } : {}),
     typeFilter,
     sort,
     placeholderData: true,

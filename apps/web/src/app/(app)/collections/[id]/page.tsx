@@ -46,7 +46,7 @@ export default function CollectionDetailPage({
     refetch,
   } = useInfiniteItems({
     collectionId: id,
-    includeArchived: showArchived || undefined,
+    ...(showArchived ? { includeArchived: true } : {}),
     typeFilter,
     sort,
     placeholderData: true,

@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@hako/db';
-import type { CreateItemInput, UpdateItemInput } from '@hako/shared';
+import type { CreateItemInput, Item, ItemCollection, UpdateItemInput } from '@hako/shared';
 import { Logger } from '../logger';
 import type { ScraperService } from './scraper.service';
 
@@ -14,6 +14,50 @@ type FindAllOptions = {
   sortBy?: 'createdAt' | 'title' | undefined;
   sortDir?: 'asc' | 'desc' | undefined;
 };
+
+type PrismaItem = {
+  id: string;
+  userId: string;
+  url: string;
+  type: Item['type'];
+  status: Item['status'];
+  title: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  content: string | null;
+  transcript: string | null;
+  author: string | null;
+  siteName: string | null;
+  isArchived: boolean;
+  isFavorite: boolean;
+  archivedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+function toItem(item: PrismaItem, collections: ItemCollection[], sectionId?: string | null): Item {
+  return {
+    id: item.id,
+    userId: item.userId,
+    url: item.url,
+    type: item.type,
+    status: item.status,
+    title: item.title,
+    description: item.description,
+    imageUrl: item.imageUrl,
+    content: item.content,
+    transcript: item.transcript,
+    author: item.author,
+    siteName: item.siteName,
+    isArchived: item.isArchived,
+    isFavorite: item.isFavorite,
+    archivedAt: item.archivedAt?.toISOString() ?? null,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+    collections,
+    ...(sectionId !== undefined && { sectionId }),
+  };
+}
 
 export class ItemsService {
   private readonly logger = new Logger(ItemsService.name);
@@ -101,16 +145,13 @@ export class ItemsService {
       const currentCollection = collectionId
         ? collections.find((ci) => ci.collectionId === collectionId)
         : undefined;
-      return {
-        ...item,
-        collections: collections.map((ci) => ({
-          collectionId: ci.collectionId,
-          collectionName: ci.collection.name,
-          collectionColor: ci.collection.color,
-          collectionIcon: ci.collection.icon ?? null,
-        })),
-        ...(currentCollection !== undefined && { sectionId: currentCollection.sectionId }),
-      };
+      const mappedCollections = collections.map((ci) => ({
+        collectionId: ci.collectionId,
+        collectionName: ci.collection.name,
+        collectionColor: ci.collection.color,
+        collectionIcon: ci.collection.icon ?? null,
+      }));
+      return toItem(item, mappedCollections, currentCollection?.sectionId);
     });
 
     return { items: mapped, nextCursor: hasMore ? (mapped[mapped.length - 1]?.id ?? null) : null };
@@ -175,15 +216,17 @@ export class ItemsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return items.map(({ collections, ...item }) => ({
-      ...item,
-      collections: collections.map((ci) => ({
-        collectionId: ci.collectionId,
-        collectionName: ci.collection.name,
-        collectionColor: ci.collection.color,
-        collectionIcon: ci.collection.icon ?? null,
-      })),
-    }));
+    return items.map(({ collections, ...item }) =>
+      toItem(
+        item,
+        collections.map((ci) => ({
+          collectionId: ci.collectionId,
+          collectionName: ci.collection.name,
+          collectionColor: ci.collection.color,
+          collectionIcon: ci.collection.icon ?? null,
+        })),
+      ),
+    );
   }
 
   async countInbox(userId: string) {

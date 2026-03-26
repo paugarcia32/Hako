@@ -193,8 +193,8 @@ describe('ItemsService', () => {
 
       const found = result.items.find((i) => i.id === item.id);
       expect(found?.collections).toHaveLength(1);
-      expect(found?.collections[0]?.collectionId).toBe(collection.id);
-      expect(found?.collections[0]?.collectionName).toBe(collection.name);
+      expect(found?.collections?.[0]?.collectionId).toBe(collection.id);
+      expect(found?.collections?.[0]?.collectionName).toBe(collection.name);
     });
 
     it('cursor pagination returns next page without duplicates', async () => {

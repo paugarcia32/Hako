@@ -22,6 +22,8 @@ export type Item = Timestamp & {
   imageUrl: string | null;
   content: string | null;
   transcript: string | null;
+  author: string | null;
+  siteName: string | null;
   isArchived: boolean;
   isFavorite: boolean;
   archivedAt: string | null;
