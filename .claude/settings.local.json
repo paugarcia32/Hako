@@ -147,7 +147,9 @@
       "Bash(pnpm -w run lint)",
       "Bash(pnpm -w run format)",
       "Bash(pnpm --filter @hako/trpc test)",
-      "Bash(find /c/Users/Pau/dev/hako/packages/trpc -name global*setup*)"
+      "Bash(find /c/Users/Pau/dev/hako/packages/trpc -name global*setup*)",
+      "Bash(pnpm --filter @hako/server build)",
+      "Bash(pnpm --filter @hako/server typecheck)"
     ]
   }
 }

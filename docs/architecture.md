@@ -5,11 +5,11 @@
 ```
 hako/
 ├── apps/
-│   ├── api/          # NestJS HTTP adapter (@hako/api)
 │   └── web/          # Next.js 15 frontend (@hako/web)
 ├── packages/
 │   ├── db/           # Prisma schema, migrations, generated client (@hako/db)
 │   ├── trpc/         # Business logic + tRPC routers (@hako/trpc)
+│   ├── server/       # API: Hono app + Node.js startup (@hako/server)
 │   ├── types/        # Shared TypeScript types (@hako/types)
 │   ├── utils/        # Shared utilities (@hako/utils)
 │   └── config/       # Shared tsconfig and tool configs (@hako/config)
@@ -107,36 +107,30 @@ When an item is created, `ScraperService` iterates its strategy list in order, c
 
 ---
 
-## Backend — `apps/api`
+## `packages/server` — API
 
-**Stack**: NestJS 10 + Express + Prisma 5 + PostgreSQL + better-auth 1
+**Stack**: Hono + @hono/node-server + better-auth + rate-limiter-flexible + @hono/trpc-server
 
-`apps/api` is a thin HTTP adapter. It does not contain business logic. Its only responsibilities are:
+The full API: Hono app wired with CORS, rate limiting, auth and tRPC, plus Node.js startup. ESM-native — better-auth imports directly without any `new Function` workaround.
 
-1. Expose `/api/auth/*` via better-auth
-2. Mount the tRPC handler from `@hako/trpc` at `/trpc`
-3. Inject `PrismaService` and `ScraperService` into the tRPC context per request
+```
+packages/server/src/
+├── db.ts            # PrismaClient singleton
+├── auth.ts          # betterAuth() static ESM import
+├── scraper.ts       # ScraperService singleton (all 7 strategies)
+├── trpc-handler.ts  # @hono/trpc-server mount + createContext
+└── index.ts         # Hono app + serve() + Prisma lifecycle + shutdown handlers
+```
 
 ### Request flow
 
 ```
 HTTP request
-  → Express (NestJS adapter)
-  → SessionMiddleware  (extracts userId from better-auth session cookie)
-  → ThrottlerGuard     (60 req/min in prod, per IP)
-  → /api/auth/*        → AuthMiddleware → better-auth handler
-  → /trpc/*            → TrpcMiddleware → @hako/trpc appRouter
-```
-
-### Module layout
-
-```
-src/
-├── auth/             # better-auth init, SessionMiddleware, AuthMiddleware
-├── prisma/           # PrismaService (global NestJS module)
-└── trpc/             # HTTP adapter only
-    ├── trpc.middleware.ts   # Instantiates ScraperService, builds context, mounts createExpressMiddleware
-    └── trpc.module.ts       # Registers TrpcMiddleware on /trpc
+  → Hono cors() middleware
+  → Rate limiter (60 req/min prod / 300 dev, per IP)
+  → /api/auth/*   → auth.handler(c.req.raw)  [better-auth]
+  → /trpc/*       → trpcServer({ router, createContext })
+                       └─ getSession() → userId → Context
 ```
 
 ### Database

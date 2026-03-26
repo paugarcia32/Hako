@@ -18,17 +18,17 @@ pnpm typecheck        # Run tsc --noEmit across all apps
 
 ```bash
 # tRPC package (business logic + tests)
-pnpm --filter @hako/trpc test          # Vitest (requires apps/api/.env.test)
+pnpm --filter @hako/trpc test          # Vitest (requires packages/server/.env.test)
 pnpm --filter @hako/trpc test:watch    # Watch mode
 pnpm --filter @hako/trpc test:coverage
-pnpm --filter @hako/trpc build         # Compile to dist/ (needed before api dev)
+pnpm --filter @hako/trpc build         # Compile to dist/ (needed before server dev)
 
 # Run a single test file
 pnpm --filter @hako/trpc test -- path/to/file.spec.ts
 
-# API
-pnpm --filter @hako/api dev
-pnpm --filter @hako/api build
+# Server (API)
+pnpm --filter @hako/server dev
+pnpm --filter @hako/server build
 
 # Web
 pnpm --filter @hako/web dev
@@ -47,7 +47,7 @@ pnpm format           # biome format --write . (auto-fix formatting)
 ### Database
 
 ```bash
-# From packages/db/ (or delegate via apps/api/ — both work)
+# From packages/db/ (or delegate via packages/server/ — both work)
 pnpm --filter @hako/db db:migrate       # prisma migrate dev (creates migration + applies)
 pnpm --filter @hako/db db:push          # prisma db push (no migration file, dev only)
 pnpm --filter @hako/db db:studio        # Prisma Studio UI
@@ -55,7 +55,7 @@ pnpm --filter @hako/db db:migrate:test  # Apply schema to test DB (uses .env.tes
 pnpm --filter @hako/db generate         # Regenerate Prisma client after schema changes
 ```
 
-Schema and migrations live in `packages/db/prisma/`. Requires `.env` in `apps/api/` — copy from `.env.example`. Test DB requires `.env.test`.
+Schema and migrations live in `packages/db/prisma/`. Requires `.env` in `packages/server/` — copy from `.env.example`. Test DB requires `.env.test`.
 
 ---
 
@@ -63,16 +63,17 @@ Schema and migrations live in `packages/db/prisma/`. Requires `.env` in `apps/ap
 
 Full reference: [`docs/architecture.md`](docs/architecture.md)
 
-**Monorepo**: pnpm workspaces + Turborepo. Five shared packages:
+**Monorepo**: pnpm workspaces + Turborepo. Six packages:
 - `@hako/db` — Prisma schema, migrations, and generated client (single source of truth for DB)
 - `@hako/trpc` — all business logic: tRPC routers, services, scraper strategies (framework-agnostic TypeScript)
-- `@hako/types` — shared TypeScript types (imported by both apps)
-- `@hako/utils` — shared utility functions
-- `@hako/config` — shared tsconfig and tool configs (`base`, `nextjs`, `nestjs`)
+- `@hako/server` — the API: Hono app + Node.js startup. CORS, rate limiting, auth, tRPC mounting
+- `@hako/types` — shared TypeScript types
+- `@hako/utils` — shared utilities
+- `@hako/config` — shared tsconfig and tool configs (`base`, `nextjs`)
 
-**API** (`apps/api`): Thin NestJS HTTP adapter. Mounts `@hako/trpc`'s `appRouter` via `createExpressMiddleware`, handles auth with better-auth. No domain logic lives here. All API surface is tRPC — no REST endpoints except `/api/auth/*`.
+**Web** (`apps/web`): Next.js 15 App Router + React 19 + tRPC client + React Query 5 + Tailwind 4.
 
-**Web** (`apps/web`): Next.js 15 App Router + React 19 + tRPC client + React Query 5 + Tailwind 4. Imports `AppRouter` type from `@hako/trpc` — types only, no runtime coupling.
+Imports `AppRouter` type from `@hako/trpc` — types only, no runtime coupling.
 
 ### Adding a new feature
 
@@ -82,7 +83,7 @@ Full reference: [`docs/architecture.md`](docs/architecture.md)
 
 ### Auth
 
-Sessions are cookie-based (better-auth). The `userId` is injected into tRPC context by `SessionMiddleware`. Protected procedures throw `UNAUTHORIZED` if `userId` is absent. **Never trust user-supplied IDs** — always scope DB queries with the `userId` from context.
+Sessions are cookie-based (better-auth). The `userId` is extracted from the session cookie per request in `@hako/server`'s tRPC context factory and injected into tRPC context. Protected procedures throw `UNAUTHORIZED` if `userId` is absent. **Never trust user-supplied IDs** — always scope DB queries with the `userId` from context.
 
 ---
 
@@ -101,10 +102,10 @@ Sessions are cookie-based (better-auth). The `userId` is injected into tRPC cont
 - All DB access goes through the `PrismaClient` instance passed via context — never instantiate Prisma directly inside a service.
 - Add tests for scraper strategies and any non-trivial service logic. Tests use Vitest and live alongside source files as `*.spec.ts` inside `packages/trpc/src/`.
 
-### `apps/api` (NestJS HTTP adapter)
+### `packages/server` (API)
 
-- Only three NestJS modules: `AppModule`, `AuthModule`, `TrpcModule`.
-- No domain logic here — `TrpcMiddleware` is the only file that touches tRPC, and it just builds the context and mounts the handler.
+- Contains the Hono app (auth routing, tRPC mounting, CORS, rate limiting) and the Node.js startup (`serve` + Prisma lifecycle). No domain logic.
+- ESM-native — imports `better-auth` as a direct static import (no `new Function` workaround).
 
 ### Frontend (React / Next.js)
 
@@ -117,8 +118,7 @@ Sessions are cookie-based (better-auth). The `userId` is injected into tRPC cont
 ### Style
 
 - Formatter: Biome with 2-space indent, single quotes, trailing commas, 100 char line width.
-- In the API (`apps/api/**`), `useImportType` is disabled to support NestJS decorator patterns — use regular imports.
-- In the Web (`apps/web/**`), `useImportType` is enforced — always use `import type` for type-only imports.
+- `useImportType` is enforced everywhere — always use `import type` for type-only imports.
 
 ---
 

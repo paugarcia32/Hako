@@ -10,9 +10,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "dotenv -e ../../apps/api/.env.test -- vitest run",
-    "test:watch": "dotenv -e ../../apps/api/.env.test -- vitest",
-    "test:coverage": "dotenv -e ../../apps/api/.env.test -- vitest run --coverage"
+    "test": "dotenv -e ../server/.env.test -- vitest run",
+    "test:watch": "dotenv -e ../server/.env.test -- vitest",
+    "test:coverage": "dotenv -e ../server/.env.test -- vitest run --coverage"
   },
   "dependencies": {
     "@hako/db": "workspace:*",
