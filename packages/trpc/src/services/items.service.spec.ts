@@ -1,5 +1,6 @@
-import type { ScrapeJobData } from '@hako/shared';
+import type { IndexSyncJobData, ScrapeJobData } from '@hako/shared';
 import type { Queue } from 'bullmq';
+import type { MeiliSearch } from 'meilisearch';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { truncateAll } from '../../test/helpers/db';
 import { createTestCollection, createTestItem, createTestUser } from '../../test/helpers/factories';
@@ -435,7 +436,7 @@ describe('ItemsService', () => {
       const user = await createTestUser();
       const item = await createTestItem(user.id);
 
-      const updated = await service.archive(user.id, item.id);
+      const updated = await service.archive(user.id, item.id, null);
 
       expect(updated.isArchived).toBe(true);
       expect(updated.archivedAt).not.toBeNull();
@@ -446,7 +447,19 @@ describe('ItemsService', () => {
       const user2 = await createTestUser();
       const item = await createTestItem(user2.id);
 
-      await expect(service.archive(user1.id, item.id)).rejects.toThrow();
+      await expect(service.archive(user1.id, item.id, null)).rejects.toThrow();
+    });
+
+    it('calls indexSyncQueue.add with itemId and userId', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id);
+      const mockQueue = {
+        add: vi.fn().mockResolvedValue(undefined),
+      } as unknown as Queue<IndexSyncJobData>;
+
+      await service.archive(user.id, item.id, mockQueue);
+
+      expect(mockQueue.add).toHaveBeenCalledWith('sync', { itemId: item.id, userId: user.id });
     });
   });
 
@@ -455,7 +468,7 @@ describe('ItemsService', () => {
       const user = await createTestUser();
       const item = await createTestItem(user.id);
 
-      const updated = await service.toggleFavorite(user.id, item.id, true);
+      const updated = await service.toggleFavorite(user.id, item.id, true, null);
 
       expect(updated.isFavorite).toBe(true);
     });
@@ -464,7 +477,7 @@ describe('ItemsService', () => {
       const user = await createTestUser();
       const item = await createTestItem(user.id, { isFavorite: true });
 
-      const updated = await service.toggleFavorite(user.id, item.id, false);
+      const updated = await service.toggleFavorite(user.id, item.id, false, null);
 
       expect(updated.isFavorite).toBe(false);
     });
@@ -474,7 +487,7 @@ describe('ItemsService', () => {
       const user2 = await createTestUser();
       const item = await createTestItem(user2.id);
 
-      await expect(service.toggleFavorite(user1.id, item.id, true)).rejects.toThrow();
+      await expect(service.toggleFavorite(user1.id, item.id, true, null)).rejects.toThrow();
     });
   });
 
@@ -482,9 +495,9 @@ describe('ItemsService', () => {
     it('sets isArchived to false and clears archivedAt', async () => {
       const user = await createTestUser();
       const item = await createTestItem(user.id);
-      await service.archive(user.id, item.id);
+      await service.archive(user.id, item.id, null);
 
-      const updated = await service.unarchive(user.id, item.id);
+      const updated = await service.unarchive(user.id, item.id, null);
 
       expect(updated.isArchived).toBe(false);
       expect(updated.archivedAt).toBeNull();
@@ -495,7 +508,7 @@ describe('ItemsService', () => {
       const user2 = await createTestUser();
       const item = await createTestItem(user2.id);
 
-      await expect(service.unarchive(user1.id, item.id)).rejects.toThrow();
+      await expect(service.unarchive(user1.id, item.id, null)).rejects.toThrow();
     });
   });
 
@@ -539,7 +552,7 @@ describe('ItemsService', () => {
       const user = await createTestUser();
       const item = await createTestItem(user.id);
 
-      await service.delete(user.id, item.id);
+      await service.delete(user.id, item.id, null);
 
       const found = await service.findOne(user.id, item.id);
       expect(found).toBeNull();
@@ -550,7 +563,61 @@ describe('ItemsService', () => {
       const user2 = await createTestUser();
       const item = await createTestItem(user2.id);
 
-      await expect(service.delete(user1.id, item.id)).rejects.toThrow();
+      await expect(service.delete(user1.id, item.id, null)).rejects.toThrow();
+    });
+
+    it('calls meili.deleteDocument when meili is provided', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id);
+
+      const mockDeleteDocument = vi.fn().mockResolvedValue(undefined);
+      const mockMeili = {
+        index: vi.fn().mockReturnValue({ deleteDocument: mockDeleteDocument }),
+      } as unknown as MeiliSearch;
+
+      await service.delete(user.id, item.id, mockMeili);
+
+      expect(mockDeleteDocument).toHaveBeenCalledWith(item.id);
+    });
+  });
+
+  describe('search', () => {
+    it('fallback (meili: null) returns items matching title query', async () => {
+      const user = await createTestUser();
+      await createTestItem(user.id, { title: 'Unique Keyword Here' });
+      await createTestItem(user.id, { title: 'Unrelated' });
+
+      const results = await service.search(user.id, 'Unique Keyword', null);
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.title).toBe('Unique Keyword Here');
+    });
+
+    it('fallback respects userId isolation', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      await createTestItem(user2.id, { title: 'Secret Item' });
+
+      const results = await service.search(user1.id, 'Secret Item', null);
+      expect(results).toHaveLength(0);
+    });
+
+    it('calls meili.index.search with userId filter when meili is provided', async () => {
+      const user = await createTestUser();
+      const item = await createTestItem(user.id, { title: 'Meili Result' });
+
+      const mockSearch = vi.fn().mockResolvedValue({ hits: [{ id: item.id }] });
+      const mockMeili = {
+        index: vi.fn().mockReturnValue({ search: mockSearch }),
+      } as unknown as MeiliSearch;
+
+      await service.search(user.id, 'Meili Result', mockMeili);
+
+      expect(mockMeili.index).toHaveBeenCalledWith('items');
+      expect(mockSearch).toHaveBeenCalledWith(
+        'Meili Result',
+        expect.objectContaining({ filter: expect.stringContaining(user.id) }),
+      );
     });
   });
 });

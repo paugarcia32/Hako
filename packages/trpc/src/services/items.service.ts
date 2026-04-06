@@ -1,12 +1,14 @@
 import type { PrismaClient } from '@hako/db';
 import type {
   CreateItemInput,
+  IndexSyncJobData,
   Item,
   ItemCollection,
   ScrapeJobData,
   UpdateItemInput,
 } from '@hako/shared';
 import type { Queue } from 'bullmq';
+import type { MeiliSearch } from 'meilisearch';
 import { Logger } from '../logger';
 import type { ScraperService } from './scraper.service';
 
@@ -177,30 +179,45 @@ export class ItemsService {
     return this.prisma.item.findFirst({ where: { id, userId } });
   }
 
-  async archive(userId: string, id: string) {
-    return this.prisma.item.update({
+  async archive(userId: string, id: string, indexSyncQueue: Queue<IndexSyncJobData> | null) {
+    const item = await this.prisma.item.update({
       where: { id, userId },
       data: { isArchived: true, archivedAt: new Date() },
     });
+    await indexSyncQueue?.add('sync', { itemId: id, userId });
+    return item;
   }
 
-  async unarchive(userId: string, id: string) {
-    return this.prisma.item.update({
+  async unarchive(userId: string, id: string, indexSyncQueue: Queue<IndexSyncJobData> | null) {
+    const item = await this.prisma.item.update({
       where: { id, userId },
       data: { isArchived: false, archivedAt: null },
     });
+    await indexSyncQueue?.add('sync', { itemId: id, userId });
+    return item;
   }
 
-  async toggleFavorite(userId: string, id: string, isFavorite: boolean) {
-    return this.prisma.item.update({
+  async toggleFavorite(
+    userId: string,
+    id: string,
+    isFavorite: boolean,
+    indexSyncQueue: Queue<IndexSyncJobData> | null,
+  ) {
+    const item = await this.prisma.item.update({
       where: { id, userId },
       data: { isFavorite },
     });
+    await indexSyncQueue?.add('sync', { itemId: id, userId });
+    return item;
   }
 
-  async update(userId: string, input: UpdateItemInput) {
+  async update(
+    userId: string,
+    input: UpdateItemInput,
+    indexSyncQueue: Queue<IndexSyncJobData> | null,
+  ) {
     const { id, title, description, imageUrl, type } = input;
-    return this.prisma.item.update({
+    const item = await this.prisma.item.update({
       where: { id, userId },
       data: {
         ...(title !== undefined && { title }),
@@ -209,13 +226,55 @@ export class ItemsService {
         ...(type !== undefined && { type }),
       },
     });
+    await indexSyncQueue?.add('sync', { itemId: id, userId });
+    return item;
   }
 
-  async delete(userId: string, id: string) {
-    return this.prisma.item.delete({ where: { id, userId } });
+  async delete(userId: string, id: string, meili: MeiliSearch | null) {
+    await this.prisma.item.delete({ where: { id, userId } });
+    await meili?.index('items').deleteDocument(id);
   }
 
-  async search(userId: string, query: string) {
+  async search(userId: string, query: string, meili: MeiliSearch | null) {
+    if (!meili) return this.searchFallback(userId, query);
+
+    const index = meili.index('items');
+    const result = await index.search(query, {
+      filter: `userId = "${userId}" AND isArchived = false`,
+      attributesToHighlight: ['title', 'description'],
+      highlightPreTag: '<mark>',
+      highlightPostTag: '</mark>',
+      limit: 50,
+    });
+
+    if (result.hits.length === 0) return [];
+
+    const ids = result.hits.map((h) => h.id as string);
+    const items = await this.prisma.item.findMany({
+      where: { id: { in: ids }, userId },
+      include: { collections: { include: { collection: true } } },
+    });
+
+    const itemMap = new Map(items.map((i) => [i.id, i]));
+    return ids.flatMap((id) => {
+      const item = itemMap.get(id);
+      if (!item) return [];
+      const { collections, ...rest } = item;
+      return [
+        toItem(
+          rest,
+          collections.map((ci) => ({
+            collectionId: ci.collectionId,
+            collectionName: ci.collection.name,
+            collectionColor: ci.collection.color,
+            collectionIcon: ci.collection.icon ?? null,
+          })),
+        ),
+      ];
+    });
+  }
+
+  private async searchFallback(userId: string, query: string) {
     const q = query.trim();
     const items = await this.prisma.item.findMany({
       where: {

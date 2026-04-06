@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@hako/db';
-import type { ScrapeJobData } from '@hako/shared';
+import type { IndexSyncJobData, ScrapeJobData } from '@hako/shared';
 import type { Queue } from 'bullmq';
+import type { MeiliSearch } from 'meilisearch';
 import type { RateLimiterAbstract } from 'rate-limiter-flexible';
 import type { ScraperService } from './services/scraper.service';
 
@@ -22,6 +23,8 @@ export type Context = {
   req: AppRequest;
   rateLimiters: RateLimiters;
   scrapeQueue: Queue<ScrapeJobData> | null;
+  meili: MeiliSearch | null;
+  indexSyncQueue: Queue<IndexSyncJobData> | null;
 };
 
 export type PublicContext = {
@@ -31,4 +34,6 @@ export type PublicContext = {
   req: AppRequest;
   rateLimiters: RateLimiters | null;
   scrapeQueue: Queue<ScrapeJobData> | null;
+  meili: MeiliSearch | null;
+  indexSyncQueue: Queue<IndexSyncJobData> | null;
 };

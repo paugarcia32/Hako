@@ -14,7 +14,8 @@
     "@hako/trpc": "workspace:*",
     "bullmq": "^5.0.0",
     "dotenv": "^16.4.0",
-    "ioredis": "^5.4.0"
+    "ioredis": "^5.4.0",
+    "meilisearch": "^0.40.0"
   },
   "devDependencies": {
     "tsup": "^8.0.0",

@@ -31,6 +31,7 @@ export const scrapeWorker = new Worker<ScrapeJobData>(
     });
 
     await indexSyncQueue.add('sync', { itemId, userId });
+    console.log(`[scrape] job ${job.id} done — indexed ${itemId}`);
   },
   {
     connection: redis,

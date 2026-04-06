@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hako/db": "workspace:*",
+    "@hako/shared": "workspace:*",
     "@hako/trpc": "workspace:*",
     "@hono/node-server": "^1.0.0",
     "bullmq": "^5.0.0",
@@ -23,11 +24,11 @@
     "better-auth": "^1.0.0",
     "hono": "^4.0.0",
     "ioredis": "^5.4.0",
+    "meilisearch": "^0.40.0",
     "rate-limiter-flexible": "^5.0.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@hako/shared": "workspace:*",
     "@types/node": "^22.0.0",
     "dotenv-cli": "^11.0.0",
     "tsup": "^8.0.0",

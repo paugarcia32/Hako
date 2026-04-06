@@ -38,19 +38,31 @@ export const itemsRouter = router({
       }),
     )
     .mutation(({ ctx, input }) =>
-      new ItemsService(ctx.prisma, ctx.scraperService).update(ctx.userId, input),
+      new ItemsService(ctx.prisma, ctx.scraperService).update(
+        ctx.userId,
+        input,
+        ctx.indexSyncQueue,
+      ),
     ),
 
   archive: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) =>
-      new ItemsService(ctx.prisma, ctx.scraperService).archive(ctx.userId, input.id),
+      new ItemsService(ctx.prisma, ctx.scraperService).archive(
+        ctx.userId,
+        input.id,
+        ctx.indexSyncQueue,
+      ),
     ),
 
   unarchive: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) =>
-      new ItemsService(ctx.prisma, ctx.scraperService).unarchive(ctx.userId, input.id),
+      new ItemsService(ctx.prisma, ctx.scraperService).unarchive(
+        ctx.userId,
+        input.id,
+        ctx.indexSyncQueue,
+      ),
     ),
 
   toggleFavorite: protectedProcedure
@@ -60,19 +72,20 @@ export const itemsRouter = router({
         ctx.userId,
         input.id,
         input.isFavorite,
+        ctx.indexSyncQueue,
       ),
     ),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) =>
-      new ItemsService(ctx.prisma, ctx.scraperService).delete(ctx.userId, input.id),
+      new ItemsService(ctx.prisma, ctx.scraperService).delete(ctx.userId, input.id, ctx.meili),
     ),
 
   search: protectedProcedure
     .input(z.object({ query: z.string().min(1).max(100) }))
     .query(({ ctx, input }) =>
-      new ItemsService(ctx.prisma, ctx.scraperService).search(ctx.userId, input.query),
+      new ItemsService(ctx.prisma, ctx.scraperService).search(ctx.userId, input.query, ctx.meili),
     ),
 
   count: protectedProcedure.query(({ ctx }) =>

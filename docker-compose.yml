@@ -19,7 +19,19 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
+  meilisearch:
+    image: getmeili/meilisearch:v1.8
+    environment:
+      MEILI_MASTER_KEY: masterkey
+      MEILI_ENV: development
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    restart: unless-stopped
+
 
 volumes:
   postgres_data:
   redis_data:
+  meilisearch_data:

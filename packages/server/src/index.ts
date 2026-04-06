@@ -4,6 +4,8 @@ import { cors } from 'hono/cors';
 import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 import { auth } from './auth.js';
 import { prisma } from './db.js';
+import { setupMeilisearch } from './meili-setup.js';
+import { meili } from './meili.js';
 import { redis } from './redis.js';
 import { trpcHandler } from './trpc-handler.js';
 
@@ -45,6 +47,7 @@ app.use('/trpc/*', trpcHandler);
 
 const port = Number(process.env.PORT ?? 3001);
 await prisma.$connect();
+if (meili) await setupMeilisearch(meili);
 
 const server = serve({ fetch: app.fetch, port }, () => {
   console.log(`API running on http://localhost:${port}`);

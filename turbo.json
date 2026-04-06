@@ -5,6 +5,8 @@
     "DATABASE_URL",
     "TEST_DATABASE_URL",
     "REDIS_URL",
+    "MEILISEARCH_URL",
+    "MEILISEARCH_KEY",
     "NEXT_PUBLIC_APP_URL"
   ],
   "tasks": {

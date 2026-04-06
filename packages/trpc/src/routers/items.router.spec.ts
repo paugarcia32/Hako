@@ -486,4 +486,28 @@ describe('items tRPC router', () => {
       await expect(caller.items.delete({ id: item.id })).rejects.toThrow();
     });
   });
+
+  describe('items.search', () => {
+    it('returns items matching the query (fallback path)', async () => {
+      const user = await createTestUser();
+      const caller = getCaller(user.id);
+      await createTestItem(user.id, { title: 'TypeScript Tips' });
+      await createTestItem(user.id, { title: 'Go Programming' });
+
+      const results = await caller.items.search({ query: 'TypeScript' });
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.title).toBe('TypeScript Tips');
+    });
+
+    it('returns empty array when nothing matches', async () => {
+      const user = await createTestUser();
+      const caller = getCaller(user.id);
+      await createTestItem(user.id, { title: 'Something else' });
+
+      const results = await caller.items.search({ query: 'xyznotfound' });
+
+      expect(results).toHaveLength(0);
+    });
+  });
 });

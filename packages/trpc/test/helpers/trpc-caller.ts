@@ -20,6 +20,8 @@ export function getCaller(userId?: string, rateLimiters: RateLimiters | null = n
     req: { ip: null, headers: {} } as MockReq,
     rateLimiters,
     scrapeQueue: null,
+    meili: null,
+    indexSyncQueue: null,
   };
 
   return appRouter.createCaller(ctx as Parameters<typeof appRouter.createCaller>[0]);
